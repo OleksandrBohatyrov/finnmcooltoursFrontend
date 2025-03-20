@@ -1,0 +1,91 @@
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #f7f7f7;
+    padding: 20px;
+  }
+  
+  .login-box {
+    background: #fff;
+    width: 400px;
+    max-width: 90%;
+    padding: 30px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  
+  .login-logo {
+    width: 180px; /* подберите нужный размер */
+    margin-bottom: 20px;
+  }
+  
+  
+  .login-title {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  
+  .login-form-group {
+    margin-bottom: 15px;
+    text-align: left;
+  }
+  
+  .login-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #333;
+  }
+  
+  .login-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    color: #333;
+  }
+  .login-input::placeholder {
+    color: transparent; 
+  }
+  
+  .login-button {
+    background-color: #2c5e2b; 
+    color: #ffd200;          
+    border: none;
+    padding: 12px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 100%;
+    margin-top: 10px;
+    transition: background-color 0.2s ease;
+  }
+  .login-button:hover {
+    background-color: #22481f; 
+  }
+  
+  .login-message {
+    margin-top: 15px;
+    font-size: 0.95rem;
+    color: #d00;
+  }
+  
+  @media (max-width: 480px) {
+    .login-box {
+      width: 100%;
+      padding: 20px;
+    }
+    .login-title {
+      font-size: 1.5rem;
+    }
+    .login-logo {
+      width: 140px;
+    }
+  }
+  

@@ -1,38 +1,97 @@
-.App {
-  text-align: center;
+/* Задаём общий фон для страницы */
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  background: #f7f7f7;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* Контейнер для контента */
+.app-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* Общий стиль для "карточек" */
+.container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+/* Пример стилей для таблиц */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  margin-top: 20px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+table thead {
+  background-color: #f0f0f0;
+}
+
+table th,
+table td {
+  padding: 12px;
+  border: 1px solid #eee;
+  text-align: left;
+}
+
+/* Кнопки */
+.btn {
+  padding: 8px 12px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-primary {
+  background-color: #007bff;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.btn-primary:hover {
+  background-color: #0056b3;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+}
+
+.btn-warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.btn-warning:hover {
+  background-color: #e0a800;
+}
+
+/* Сообщения */
+.loading, .error, .form-message {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #555;
+}
+
+/* Адаптивность: на мобильном контейнер можно сжимать */
+@media (max-width: 600px) {
+  .app-content {
+    padding: 10px;
   }
-  to {
-    transform: rotate(360deg);
+  .container {
+    padding: 15px;
   }
 }
