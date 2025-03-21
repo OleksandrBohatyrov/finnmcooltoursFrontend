@@ -1,18 +1,15 @@
-/* Задаём общий фон для страницы */
 body {
   margin: 0;
   font-family: 'Roboto', sans-serif;
   background: #f7f7f7;
 }
 
-/* Контейнер для контента */
 .app-content {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
 }
 
-/* Общий стиль для "карточек" */
 .container {
   background: #fff;
   padding: 20px;
@@ -20,8 +17,6 @@ body {
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   margin-bottom: 20px;
 }
-
-/* Пример стилей для таблиц */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -42,7 +37,6 @@ table td {
   text-align: left;
 }
 
-/* Кнопки */
 .btn {
   padding: 8px 12px;
   border: none;
@@ -79,14 +73,12 @@ table td {
   background-color: #e0a800;
 }
 
-/* Сообщения */
 .loading, .error, .form-message {
   text-align: center;
   font-size: 1.1rem;
   color: #555;
 }
 
-/* Адаптивность: на мобильном контейнер можно сжимать */
 @media (max-width: 600px) {
   .app-content {
     padding: 10px;

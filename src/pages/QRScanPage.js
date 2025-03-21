@@ -17,7 +17,6 @@ const QRScanPage = ({ token }) => {
 
   const handleResult = async (data, error) => {
     if (error) {
-      // Suppress errors when QR code is not found in the frame
       return;
     }
     if (data) {

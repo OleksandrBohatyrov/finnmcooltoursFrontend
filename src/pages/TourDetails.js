@@ -3,13 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 function TourDetails({ token }) {
   const { tourType } = useParams();
-  const navigate = useNavigate(); // нужен для перехода по кнопке
+  const navigate = useNavigate(); 
 
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // URL, чтобы получить список пассажиров по TourType
   const apiUrl = `https://localhost:7246/api/records?tourType=${encodeURIComponent(tourType)}`;
 
   useEffect(() => {
@@ -38,7 +37,7 @@ function TourDetails({ token }) {
       });
   }, [tourType, apiUrl, token]);
 
-  // Отмечаем пассажира как CheckedIn
+  // Mark passenger as CheckedIn
   const markCheckedIn = async (id) => {
     try {
       const res = await fetch(`https://localhost:7246/api/records/${id}/checkin`, {
@@ -53,7 +52,6 @@ function TourDetails({ token }) {
     }
   };
 
-  // Снимаем отметку CheckedIn
   const removeCheckedIn = async (id) => {
     try {
       const res = await fetch(`https://localhost:7246/api/records/${id}/remove-checkin`, {
@@ -74,11 +72,10 @@ function TourDetails({ token }) {
   return (
     <div className="container">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        {/* Заголовок и кнопка сканера в одной строке */}
         <h1 style={{ margin: 0 }}>
           Tour Details: {decodeURIComponent(tourType)}
         </h1>
-        {/* Кнопка Scan QR */}
+        {/* Button Scan QR */}
         <button
           className="btn btn-primary"
           onClick={() => navigate('/qrscan')}
