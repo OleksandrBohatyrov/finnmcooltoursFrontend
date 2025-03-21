@@ -18,7 +18,7 @@ function TourDetails({ token }) {
 
 	const rowRefs = useRef({})
 
-	const apiUrl = `${process.env.REACT_APP_API_URL}/records?tourType=${encodeURIComponent(tourType)}`
+	const apiUrl = `${process.env.REACT_APP_API_URL}/api/records?tourType=${encodeURIComponent(tourType)}`
 
 	useEffect(() => {
 		if (!token) {
@@ -61,7 +61,7 @@ function TourDetails({ token }) {
 
 	const markCheckedIn = async id => {
 		try {
-			const res = await fetch(`${process.env.REACT_APP_API_URL}/records/${id}/checkin`, {
+			const res = await fetch(`${process.env.REACT_APP_API_URL}/api/records/${id}/checkin`, {
 				method: 'POST',
 				headers: { Authorization: `Bearer ${token}` },
 			})
@@ -84,7 +84,7 @@ function TourDetails({ token }) {
 
 		try {
 			console.log('Removing check-in for passenger:', selectedPassenger.id)
-			const res = await fetch(`${process.env.REACT_APP_API_URL}/records/${selectedPassenger.id}/remove-checkin`, {
+			const res = await fetch(`${process.env.REACT_APP_API_URL}/api/records/${selectedPassenger.id}/remove-checkin`, {
 				method: 'POST',
 				headers: { Authorization: `Bearer ${token}` },
 			})
