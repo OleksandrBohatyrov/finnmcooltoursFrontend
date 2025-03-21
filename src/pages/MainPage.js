@@ -6,8 +6,7 @@ function MainPage({ token }) {
 	const [records, setRecords] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
-
-	const apiUrl = 'https://api.abkillio.xyz/login/api/records'
+	const apiUrl = `${process.env.REACT_APP_API_URL}/api/records`
 
 	useEffect(() => {
 		if (!token) {
