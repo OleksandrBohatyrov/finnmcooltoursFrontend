@@ -9,7 +9,7 @@ function TourDetails({ token }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const apiUrl = `https://localhost:7246/api/records?tourType=${encodeURIComponent(tourType)}`;
+  const apiUrl = `http://62.60.157.133/api/records?tourType=${encodeURIComponent(tourType)}`;
 
   useEffect(() => {
     if (!token) {
@@ -40,7 +40,7 @@ function TourDetails({ token }) {
   // Mark passenger as CheckedIn
   const markCheckedIn = async (id) => {
     try {
-      const res = await fetch(`https://localhost:7246/api/records/${id}/checkin`, {
+      const res = await fetch(`http://62.60.157.133/api/records/${id}/checkin`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -54,7 +54,7 @@ function TourDetails({ token }) {
 
   const removeCheckedIn = async (id) => {
     try {
-      const res = await fetch(`https://localhost:7246/api/records/${id}/remove-checkin`, {
+      const res = await fetch(`http://62.60.157.133/api/records/${id}/remove-checkin`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });

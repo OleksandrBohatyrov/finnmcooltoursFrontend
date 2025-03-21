@@ -16,7 +16,7 @@ function LoginPage({ onLogin }) {
       return;
     }
     try {
-      const res = await fetch('https://localhost:7246/api/Auth/Login', {
+      const res = await fetch('http://62.60.157.133/api/Auth/Login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })

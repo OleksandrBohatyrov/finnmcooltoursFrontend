@@ -5,7 +5,7 @@ function StatsPage({ token }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const apiUrl = 'https://localhost:7246/api/records/stats';
+  const apiUrl = 'http://62.60.157.133/api/records/stats';
 
   useEffect(() => {
     if (!token) {
