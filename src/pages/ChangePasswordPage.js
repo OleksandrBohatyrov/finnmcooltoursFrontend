@@ -9,7 +9,7 @@ function ChangePasswordPage({ token }) {
   const handleChangePassword = async () => {
     setMessage('');
     try {
-      const res = await fetch('http://62.60.157.133:5000/api/Auth/ChangePassword', {
+      const res = await fetch('https://api.abkillio.xyz/api/Auth/ChangePassword', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

@@ -5,7 +5,7 @@ function StatsPage({ token }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const apiUrl = 'http://62.60.157.133:5000/api/records/stats';
+  const apiUrl = 'https://api.abkillio.xyz/api/records/stats';
 
   useEffect(() => {
     if (!token) {

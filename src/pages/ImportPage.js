@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 function ImportPage({ token }) {
   const [excelFile, setExcelFile] = useState(null);
   const [message, setMessage] = useState('');
-  const baseUrl = 'http://62.60.157.133:5000/api/records';
+  const baseUrl = 'https://api.abkillio.xyz/api/records';
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
