@@ -6,7 +6,6 @@ function MainPage({ token }) {
 	const [records, setRecords] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
-
 	const apiUrl = `${process.env.REACT_APP_API_URL}/api/records`
 
 	useEffect(() => {

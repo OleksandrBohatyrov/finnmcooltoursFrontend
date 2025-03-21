@@ -4,9 +4,7 @@ function StatsPage({ token }) {
   const [stats, setStats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const apiUrl = `${process.env.REACT_APP_API_URL}/records/stats`;
-
   useEffect(() => {
     if (!token) {
       setError("Please log in to view stats.");
