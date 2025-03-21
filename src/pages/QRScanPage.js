@@ -1,116 +1,153 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import QrReader from 'react-web-qr-reader';
 
-const QRScanPage = ({ token }) => {
+function QRScanPage({ token }) {
+  const [message, setMessage] = useState('');
+  const [scannedPassenger, setScannedPassenger] = useState(null);
+  const [uniqueRef, setUniqueRef] = useState('');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Получаем tourType из state
+  const { tourType } = location.state || {};
+
   const delay = 500;
+
   const previewStyle = {
-    width: '100%',
+    width: '50%',
     maxWidth: '400px',
     margin: '0 auto',
     display: 'block',
   };
 
-  const [result, setResult] = useState('No result');
-  const [message, setMessage] = useState('');
-  const navigate = useNavigate();
-
   const handleResult = async (data, error) => {
     if (error) {
+      console.error('QR scan error:', error);
+      setMessage('Error scanning QR code: ' + error.message);
       return;
     }
     if (data) {
-      let uniqueRef;
+      let ref = '';
       if (typeof data === 'object' && data.data) {
-        uniqueRef = data.data;
+        ref = data.data;
       } else {
-        uniqueRef = JSON.stringify(data);
+        ref = String(data);
       }
-      setResult(uniqueRef);
+      console.log('Scanned QR code:', ref); // Для отладки
+      setUniqueRef(ref);
       setMessage('Scanning...');
-
       try {
-        const res = await fetch('https://localhost:7246/api/records/checkin-unique', {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/records/checkin-unique`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ uniqueRef }),
+          body: JSON.stringify({ uniqueRef: ref }),
         });
-
         if (res.status === 404) {
-          setMessage('Incorrect Reference number.');
+          setMessage('Passenger not found.');
           return;
         }
         if (!res.ok) {
           throw new Error(`HTTP error: ${res.status}`);
         }
         const responseData = await res.json();
-        setMessage(
-          `Success: ${responseData.message}. Passenger: ${responseData.passenger.surname} ${responseData.passenger.firstName}`
-        );
+        console.log('API response:', responseData); // Для отладки
+        setScannedPassenger(responseData.passenger);
+        setMessage(`Success: ${responseData.message}`);
       } catch (err) {
+        console.error('Fetch error:', err);
         setMessage('Error: ' + err.message);
       }
     }
   };
 
-  const handleError = (err) => {
-    console.error('QR Scanner error:', err);
-    setMessage('Error accessing camera: ' + err.message);
+  const handleBack = () => {
+    console.log('handleBack called, tourType:', tourType, 'scannedPassenger:', scannedPassenger); // Для отладки
+    if (scannedPassenger && tourType) {
+      // Формируем правильный URL с tourType
+      const url = `/tour/${encodeURIComponent(tourType)}?highlighted=${scannedPassenger.id}`;
+      console.log('Navigating to:', url); // Для отладки
+      navigate(url);
+    } else {
+      console.log('Navigating back (no scannedPassenger or tourType)');
+      navigate(-1);
+    }
   };
 
-  // Ensure the component doesn't unmount/remount unnecessarily
-  useEffect(() => {
-    // Request camera permissions on mount
-    navigator.mediaDevices
-      .getUserMedia({ video: true })
-      .catch((err) => {
-        console.error('Camera permission error:', err);
-        setMessage('Please allow camera access to scan QR codes.');
-      });
-
-    // Cleanup on unmount (optional, if needed)
-    return () => {
-      // Stop any active camera streams if necessary
-    };
-  }, []);
-
   return (
-    <div className="container" style={{ textAlign: 'center' }}>
-      <h2>QR Scanner</h2>
-      {token ? (
-        <>
-          <p>Point your camera at the QR code to check in the passenger.</p>
-          <div style={{ margin: '20px auto' }}>
-            <QrReader
-              delay={delay}
-              style={previewStyle}
-              onError={handleError}
-              onScan={handleResult} // Fixed prop name
-              constraints={{ facingMode: 'environment' }}
-              playsInline  // добавляем
-                muted 
-            />
-          </div>
-        </>
-      ) : (
-        <p>Please log in first.</p>
-      )}
-      <p>QR Data: {result}</p>
-      {message && (
-        <p style={{ marginTop: '10px', color: message.startsWith('Success') ? 'green' : 'red' }}>
-          {message}
-        </p>
-      )}
-      <div style={{ marginTop: '40px' }}>
-        <button className="btn btn-secondary" onClick={() => navigate(-1)}>
-          Go Back
-        </button>
+    <div style={styles.container}>
+      <h2 style={styles.title}>QR Scanner</h2>
+      <p style={styles.instructions}>Point your camera at the QR code to check in the passenger.</p>
+      <div style={styles.scannerWrapper}>
+        <QrReader
+          delay={delay}
+          style={previewStyle}
+          onScan={handleResult}
+          constraints={{ facingMode: 'environment' }}
+        />
       </div>
+
+      {uniqueRef && <p style={styles.refText}>QR Data: {uniqueRef}</p>}
+      {scannedPassenger && (
+        <div style={styles.passengerInfo}>
+          <p>
+            Passenger: {scannedPassenger.surname} {scannedPassenger.firstName}
+          </p>
+        </div>
+      )}
+      {message && (
+        <p style={message.startsWith('Success') ? styles.success : styles.error}>{message}</p>
+      )}
+
+      <button style={styles.backButton} onClick={handleBack}>
+        Go Back
+      </button>
     </div>
   );
+}
+
+const styles = {
+  container: {
+    maxWidth: 400,
+    margin: '0 auto',
+    padding: '1rem',
+    textAlign: 'center',
+  },
+  title: {
+    fontSize: '1.5rem',
+  },
+  instructions: {
+    fontSize: '1rem',
+    marginBottom: '1rem',
+  },
+  scannerWrapper: {
+    marginBottom: '1rem',
+  },
+  refText: {
+    fontSize: '1rem',
+    margin: '0.5rem 0',
+  },
+  passengerInfo: {
+    fontSize: '1rem',
+    fontWeight: 'bold',
+    margin: '0.5rem 0',
+  },
+  success: {
+    color: 'green',
+    marginTop: '1rem',
+  },
+  error: {
+    color: 'red',
+    marginTop: '1rem',
+  },
+  backButton: {
+    marginTop: '2rem',
+    padding: '0.75rem 1.5rem',
+    fontSize: '1rem',
+  },
 };
 
 export default QRScanPage;

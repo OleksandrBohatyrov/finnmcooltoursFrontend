@@ -1,91 +1,115 @@
 .login-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    background: #f7f7f7;
-    padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh; /* Используем dvh вместо vh для учёта системных панелей */
+  background: #f7f7f7;
+  padding: 20px;
+  box-sizing: border-box; /* Учитываем padding в размерах */
+}
+
+.login-box {
+  background: #fff;
+  width: 400px;
+  max-width: 90%;
+  padding: 30px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  min-height: 400px; /* Минимальная высота для мобильных устройств */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Центрируем содержимое по вертикали */
+}
+
+.login-logo {
+  width: 180px;
+  margin-bottom: 20px;
+}
+
+.login-title {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.login-form-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.login-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.login-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  color: #333;
+}
+
+.login-input::placeholder {
+  color: transparent;
+}
+
+.login-button {
+  background-color: #2c5e2b;
+  color: #ffd200;
+  border: none;
+  padding: 12px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 4px;
+  width: 100%;
+  margin-top: 10px;
+  transition: background-color 0.2s ease;
+}
+
+.login-button:hover {
+  background-color: #22481f;
+}
+
+.login-message {
+  margin-top: 15px;
+  font-size: 0.95rem;
+  color: #d00;
+}
+
+@media (max-width: 480px) {
+  .login-container {
+    padding: 10px; /* Уменьшаем отступы на мобильных */
+    min-height: 100dvh; /* Учитываем системные панели */
+    align-items: flex-start; /* Начинаем с верхней части, чтобы избежать обрезки */
+    margin-top: 20px; /* Добавляем отступ сверху */
   }
-  
+
   .login-box {
-    background: #fff;
-    width: 400px;
-    max-width: 90%;
-    padding: 30px 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    text-align: center;
+    width: 100%;
+    padding: 20px;
+    min-height: auto; /* Убираем фиксированную высоту, чтобы подстраиваться под содержимое */
+    max-height: 80vh; /* Ограничиваем максимальную высоту */
+    overflow-y: auto; /* Добавляем прокрутку, если содержимое не помещается */
   }
-  
-  .login-logo {
-    width: 180px; 
-    margin-bottom: 20px;
-  }
-  
-  
+
   .login-title {
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-    color: #333;
+    font-size: 1.5rem;
   }
-  
-  
-  .login-form-group {
-    margin-bottom: 15px;
-    text-align: left;
+
+  .login-logo {
+    width: 140px;
   }
-  
-  .login-label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 5px;
-    color: #333;
-  }
-  
-  .login-input {
-    width: 100%;
-    padding: 10px;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    color: #333;
-  }
-  .login-input::placeholder {
-    color: transparent; 
-  }
-  
+
   .login-button {
-    background-color: #2c5e2b; 
-    color: #ffd200;          
-    border: none;
-    padding: 12px 20px;
-    font-size: 1rem;
-    cursor: pointer;
-    border-radius: 4px;
-    width: 100%;
-    margin-top: 10px;
-    transition: background-color 0.2s ease;
+    padding: 10px; /* Уменьшаем кнопку для компактности */
   }
-  .login-button:hover {
-    background-color: #22481f; 
+
+  .login-form-group {
+    margin-bottom: 10px; /* Уменьшаем отступы между полями */
   }
-  
-  .login-message {
-    margin-top: 15px;
-    font-size: 0.95rem;
-    color: #d00;
-  }
-  
-  @media (max-width: 480px) {
-    .login-box {
-      width: 100%;
-      padding: 20px;
-    }
-    .login-title {
-      font-size: 1.5rem;
-    }
-    .login-logo {
-      width: 140px;
-    }
-  }
-  
+}

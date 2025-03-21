@@ -1,0 +1,11 @@
+@keyframes blink {
+    0% {
+      background-color: #ffefcc;
+    }
+    50% {
+      background-color: #ffd700;
+    }
+    100% {
+      background-color: #ffefcc;
+    }
+  }

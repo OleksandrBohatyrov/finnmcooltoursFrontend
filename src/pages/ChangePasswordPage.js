@@ -9,7 +9,7 @@ function ChangePasswordPage({ token }) {
   const handleChangePassword = async () => {
     setMessage('');
     try {
-      const res = await fetch('https://localhost:7246/api/Auth/ChangePassword', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Auth/ChangePassword`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
