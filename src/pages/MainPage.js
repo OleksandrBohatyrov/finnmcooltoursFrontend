@@ -7,7 +7,7 @@ function MainPage({ token }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const apiUrl = 'http://62.60.157.133/api/records';
+  const apiUrl = 'http://62.60.157.133:5000/api/records';
 
   useEffect(() => {
     if (!token) {

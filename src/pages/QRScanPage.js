@@ -30,7 +30,7 @@ const QRScanPage = ({ token }) => {
       setMessage('Scanning...');
 
       try {
-        const res = await fetch('http://62.60.157.133/api/records/checkin-unique', {
+        const res = await fetch('http://62.60.157.133:5000/api/records/checkin-unique', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
