@@ -23,14 +23,12 @@ function LoginPage({ onLogin }) {
 				body: JSON.stringify({ email, password }),
 			})
 			if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
-			const data = await res.json()
-			if (data.token) {
-				onLogin(data.token)
-				setMessage('Login successful!')
-				navigate('/')
-			} else {
-				setMessage('Login response does not contain a token.')
-			}
+
+			await res.json()
+
+			onLogin()
+			setMessage('Login successful!')
+			navigate('/')
 		} catch (err) {
 			setMessage('Login error: ' + err.message)
 		}
