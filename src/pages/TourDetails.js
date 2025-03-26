@@ -177,7 +177,6 @@ function TourDetails() {
 
   return (
     <div style={styles.container}>
-      {/* Верхняя панель: кнопка назад, заголовок, кнопка сканирования */}
       <div style={styles.headerRow}>
         <button style={styles.backButton} onClick={() => navigate(-1)}>
           Go Back
@@ -217,7 +216,6 @@ function TourDetails() {
         <i className="fas fa-search search-icon"></i>
       </div>
 
-      {/* Таблица с записями */}
       <div style={styles.tableWrapper}>
         <table style={styles.table}>
           <thead>
@@ -233,7 +231,11 @@ function TourDetails() {
           </thead>
           <tbody>
             {filteredRecords.map(r => (
-              <tr key={r.id} ref={el => (rowRefs.current[r.id] = el)}>
+              <tr
+                key={r.id}
+                ref={el => (rowRefs.current[r.id] = el)}
+                className={String(r.id) === highlightedId ? 'highlighted' : ''}
+              >
                 <td style={styles.td}>{new Date(r.tourDate).toLocaleDateString()}</td>
                 <td style={styles.td}>{r.surname}</td>
                 <td style={styles.td}>{r.firstName}</td>
