@@ -2,10 +2,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100dvh; /* Используем dvh вместо vh для учёта системных панелей */
+  min-height: 100dvh;
   background: #f7f7f7;
   padding: 20px;
-  box-sizing: border-box; /* Учитываем padding в размерах */
+  box-sizing: border-box; 
 }
 
 .login-box {
@@ -16,10 +16,10 @@
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   text-align: center;
-  min-height: 400px; /* Минимальная высота для мобильных устройств */
+  min-height: 400px; 
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Центрируем содержимое по вертикали */
+  justify-content: center; 
 }
 
 .login-logo {
@@ -83,18 +83,18 @@
 
 @media (max-width: 480px) {
   .login-container {
-    padding: 10px; /* Уменьшаем отступы на мобильных */
-    min-height: 100dvh; /* Учитываем системные панели */
-    align-items: flex-start; /* Начинаем с верхней части, чтобы избежать обрезки */
-    margin-top: 20px; /* Добавляем отступ сверху */
+    padding: 10px; 
+    min-height: 100dvh; 
+    align-items: flex-start;
+    margin-top: 20px; 
   }
 
   .login-box {
     width: 100%;
     padding: 20px;
-    min-height: auto; /* Убираем фиксированную высоту, чтобы подстраиваться под содержимое */
-    max-height: 80vh; /* Ограничиваем максимальную высоту */
-    overflow-y: auto; /* Добавляем прокрутку, если содержимое не помещается */
+    min-height: auto; 
+    max-height: 80vh; 
+    overflow-y: auto; 
   }
 
   .login-title {
@@ -106,10 +106,10 @@
   }
 
   .login-button {
-    padding: 10px; /* Уменьшаем кнопку для компактности */
+    padding: 10px; 
   }
 
   .login-form-group {
-    margin-bottom: 10px; /* Уменьшаем отступы между полями */
+    margin-bottom: 10px;
   }
 }

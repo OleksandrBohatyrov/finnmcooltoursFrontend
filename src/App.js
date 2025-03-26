@@ -11,6 +11,7 @@ import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import QRScanPage from './pages/QRScanPage';
 
+
 function App() {
   const [token, setToken] = useState(null);
 

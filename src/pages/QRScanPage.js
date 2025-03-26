@@ -9,7 +9,7 @@ function QRScanPage({ token }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Получаем tourType из state
+  // Take tourType from state
   const { tourType } = location.state || {};
 
   const delay = 500;
@@ -34,7 +34,7 @@ function QRScanPage({ token }) {
       } else {
         ref = String(data);
       }
-      console.log('Scanned QR code:', ref); // Для отладки
+      console.log('Scanned QR code:', ref); 
       setUniqueRef(ref);
       setMessage('Scanning...');
       try {
@@ -54,7 +54,7 @@ function QRScanPage({ token }) {
           throw new Error(`HTTP error: ${res.status}`);
         }
         const responseData = await res.json();
-        console.log('API response:', responseData); // Для отладки
+        console.log('API response:', responseData);
         setScannedPassenger(responseData.passenger);
         setMessage(`Success: ${responseData.message}`);
       } catch (err) {
@@ -67,9 +67,8 @@ function QRScanPage({ token }) {
   const handleBack = () => {
     console.log('handleBack called, tourType:', tourType, 'scannedPassenger:', scannedPassenger); // Для отладки
     if (scannedPassenger && tourType) {
-      // Формируем правильный URL с tourType
       const url = `/tour/${encodeURIComponent(tourType)}?highlighted=${scannedPassenger.id}`;
-      console.log('Navigating to:', url); // Для отладки
+      console.log('Navigating to:', url); 
       navigate(url);
     } else {
       console.log('Navigating back (no scannedPassenger or tourType)');
