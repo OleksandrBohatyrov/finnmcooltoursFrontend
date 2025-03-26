@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState, useNavigate } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import logo from '../assets/cropped-Finn_Logo-2-1-260x49.png'
 import '../styles/Navbar.css'
-
 
 function NavbarBootstrap({ token, setToken }) {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -13,17 +12,17 @@ function NavbarBootstrap({ token, setToken }) {
 
 	const handleLogout = async () => {
 		try {
-		  await fetch(`${process.env.REACT_APP_API_URL}/api/Auth/Logout`, {
-			method: 'POST',
-			credentials: 'include',
-		  });
-		  setToken(null);
-		  
-			navigate("/login")
+			await fetch(`${process.env.REACT_APP_API_URL}/api/Auth/Logout`, {
+				method: 'POST',
+				credentials: 'include',
+			})
+			setToken(null)
+
+			navigate('/login')
 		} catch (err) {
-		  console.error("Logout error:", err);
+			console.error('Logout error:', err)
 		}
-	  };
+	}
 
 	const handleDocClick = e => {
 		if (mobileMenuOpen && navRef.current && !navRef.current.contains(e.target)) {
