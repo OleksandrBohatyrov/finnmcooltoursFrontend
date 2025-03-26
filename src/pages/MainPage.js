@@ -2,21 +2,17 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import '../styles/MainPage.css'
 
-function MainPage({ token }) {
+function MainPage() {
 	const [records, setRecords] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
 	const apiUrl = `${process.env.REACT_APP_API_URL}/api/records`
 
 	useEffect(() => {
-		if (!token) {
-			setError('Please log in to view records.')
-			setLoading(false)
-			return
-		}
 		fetch(apiUrl, {
+			method: 'GET',
+			credentials: 'include', // Important
 			headers: {
-				Authorization: `Bearer ${token}`,
 				'Content-Type': 'application/json',
 			},
 		})
@@ -29,10 +25,17 @@ function MainPage({ token }) {
 				setLoading(false)
 			})
 			.catch(err => {
-				setError(err.message)
+				if (err.message.includes('401')) {
+					setError('Please log in to view records.')
+				} else {
+					setError(err.message)
+				}
 				setLoading(false)
 			})
-	}, [apiUrl, token])
+	}, [apiUrl])
+
+	if (loading) return <div className='loading'>Loading...</div>
+	if (error) return <div className='error'>Error: {error}</div>
 
 	// Group by TourType
 	const grouped = records.reduce((acc, record) => {
@@ -41,9 +44,6 @@ function MainPage({ token }) {
 		acc[key].push(record)
 		return acc
 	}, {})
-
-	if (loading) return <div className='loading'>Loading...</div>
-	if (error) return <div className='error'>Error: {error}</div>
 
 	return (
 		<div className='main-page'>
