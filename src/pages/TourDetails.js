@@ -16,18 +16,31 @@ function TourDetails({ token }) {
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const [selectedPassenger, setSelectedPassenger] = useState(null)
 
+	// Guide name
+	const [guideName, setGuideName] = useState('')
+	const [guideMessage, setGuideMessage] = useState('')
+
 	const rowRefs = useRef({})
 
-	const apiUrl = `${process.env.REACT_APP_API_URL}/api/records?tourType=${encodeURIComponent(tourType)}`
+	// URL for notes
+	const recordsApiUrl = `${process.env.REACT_APP_API_URL}/api/records?tourType=${encodeURIComponent(tourType)}`
 
+	// URL to get the tour
+	const tourApiUrl = `${process.env.REACT_APP_API_URL}/api/tours/byType?tourType=${encodeURIComponent(tourType)}`
+
+	// search bar
+
+	const [searchTerm, setSearchTerm] = useState('')
+
+	// 1) Loading notes
 	useEffect(() => {
 		if (!token) {
 			setError('Please log in to view details.')
 			setLoading(false)
 			return
 		}
-		console.log('Fetching records from:', apiUrl)
-		fetch(apiUrl, {
+		console.log('Fetching records from:', recordsApiUrl)
+		fetch(recordsApiUrl, {
 			headers: {
 				Authorization: `Bearer ${token}`,
 				'Content-Type': 'application/json',
@@ -45,7 +58,34 @@ function TourDetails({ token }) {
 				setError(err.message)
 				setLoading(false)
 			})
-	}, [tourType, apiUrl, token])
+	}, [tourType, recordsApiUrl, token])
+
+	// 2) Loading tour to take GuideName
+	useEffect(() => {
+		if (!token) return
+		fetch(tourApiUrl, {
+			headers: {
+				Authorization: `Bearer ${token}`,
+				'Content-Type': 'application/json',
+			},
+		})
+			.then(res => {
+				if (res.status === 404) {
+					setGuideName('')
+					return null
+				}
+				if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
+				return res.json()
+			})
+			.then(tourData => {
+				if (tourData) {
+					setGuideName(tourData.guideName || '')
+				}
+			})
+			.catch(err => {
+				console.error('Error fetching tour:', err)
+			})
+	}, [tourApiUrl, token])
 
 	useEffect(() => {
 		if (highlightedId && records.length > 0) {
@@ -59,6 +99,31 @@ function TourDetails({ token }) {
 		}
 	}, [highlightedId, records])
 
+	// Updating tour guide name (PUT /api/tours/guide?tourType=...)
+	const updateGuideName = async () => {
+		if (!guideName.trim()) {
+			setGuideMessage('Please enter a valid guide name.')
+			return
+		}
+		try {
+			const res = await fetch(`${process.env.REACT_APP_API_URL}/api/tours/guide?tourType=${encodeURIComponent(tourType)}`, {
+				method: 'PUT',
+				headers: {
+					Authorization: `Bearer ${token}`,
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ guideName }),
+			})
+			if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
+			const updatedTour = await res.json()
+			setGuideMessage(`Guide name updated to: ${updatedTour.guideName}`)
+		} catch (err) {
+			console.error('Error updating guide name:', err)
+			setGuideMessage('Error updating guide name: ' + err.message)
+		}
+	}
+
+	// Passenger check-in
 	const markCheckedIn = async id => {
 		try {
 			const res = await fetch(`${process.env.REACT_APP_API_URL}/api/records/${id}/checkin`, {
@@ -66,30 +131,26 @@ function TourDetails({ token }) {
 				headers: { Authorization: `Bearer ${token}` },
 			})
 			if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
-
 			setRecords(prev => prev.map(r => (r.id === id ? { ...r, checkedIn: true } : r)))
 		} catch (err) {
 			console.error(err)
 		}
 	}
 
+	// Dialog remove check-in
 	const handleRemoveCheckIn = passenger => {
-		console.log('Opening dialog for passenger:', passenger)
 		setSelectedPassenger(passenger)
 		setDialogOpen(true)
 	}
 
 	const confirmRemoveCheckedIn = async () => {
 		if (!selectedPassenger) return
-
 		try {
-			console.log('Removing check-in for passenger:', selectedPassenger.id)
 			const res = await fetch(`${process.env.REACT_APP_API_URL}/api/records/${selectedPassenger.id}/remove-checkin`, {
 				method: 'POST',
 				headers: { Authorization: `Bearer ${token}` },
 			})
 			if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
-
 			setRecords(prev => prev.map(r => (r.id === selectedPassenger.id ? { ...r, checkedIn: false } : r)))
 		} catch (err) {
 			console.error('Error removing check-in:', err)
@@ -99,24 +160,46 @@ function TourDetails({ token }) {
 		}
 	}
 
-	if (loading) return <div style={styles.loading}>Loading...</div>
-	if (error) return <div style={styles.error}>Error: {error}</div>
+	const filteredRecords = records.filter(r => {
+		if (!searchTerm.trim()) return true
+		const lowerSearch = searchTerm.toLowerCase()
+		const fullName = (r.surname + ' ' + r.firstName).toLowerCase()
+		return fullName.includes(lowerSearch)
+	})
+
+	if (loading) return <div>Loading...</div>
+	if (error) return <div style={{ color: 'red' }}>Error: {error}</div>
 
 	return (
 		<div style={styles.container}>
+			{/* Buttons + header */}
 			<div style={styles.headerRow}>
 				<button style={styles.backButton} onClick={() => navigate(-1)}>
 					Go Back
 				</button>
 				<h1 style={styles.title}>Tour Details: {decodeURIComponent(tourType)}</h1>
-				<button
-					style={styles.scanButton}
-					onClick={() => navigate('/qrscan', { state: { tourType } })} // Передаём tourType через state
-				>
+				<button style={styles.scanButton} onClick={() => navigate('/qrscan', { state: { tourType } })}>
 					Scan QR
 				</button>
 			</div>
 
+			{/* Enter tour guide name */}
+			<div style={styles.guideSection}>
+				<label style={styles.guideLabel}>Guide Name: </label>
+				<input type='text' value={guideName} onChange={e => setGuideName(e.target.value)} style={styles.guideInput} placeholder='Enter guide name' />
+				<button style={styles.saveGuideBtn} onClick={updateGuideName}>
+					Save Guide
+				</button>
+				{guideMessage && <p style={styles.guideMessage}>{guideMessage}</p>}
+			</div>
+
+			{/* Search bar */}
+			<div className='search-container'>
+				<input type='text' className='form-control search-input' placeholder='Search by name or surname...' value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+				<i className='fas fa-search search-icon'></i>
+			</div>
+
+			{/* Table */}
 			<div style={styles.tableWrapper}>
 				<table style={styles.table}>
 					<thead>
@@ -131,22 +214,9 @@ function TourDetails({ token }) {
 						</tr>
 					</thead>
 					<tbody>
-						{records.map(r => {
-							const isHighlighted = highlightedId && r.id.toString() === highlightedId
+						{filteredRecords.map(r => {
 							return (
-								<tr
-									key={r.id}
-									ref={el => (rowRefs.current[r.id] = el)}
-									style={{
-										...(isHighlighted
-											? {
-													backgroundColor: '#ffefcc',
-													border: '2px solid #ff9900',
-													animation: 'blink 1s ease-in-out 3',
-											  }
-											: {}),
-									}}
-								>
+								<tr key={r.id} ref={el => (rowRefs.current[r.id] = el)}>
 									<td style={styles.td}>{new Date(r.tourDate).toLocaleDateString()}</td>
 									<td style={styles.td}>{r.surname}</td>
 									<td style={styles.td}>{r.firstName}</td>
@@ -171,6 +241,7 @@ function TourDetails({ token }) {
 				</table>
 			</div>
 
+			{/* Delete Check In dialog */}
 			<AlertDialog
 				open={dialogOpen}
 				onClose={() => setDialogOpen(false)}
@@ -212,6 +283,33 @@ const styles = {
 		fontSize: '1rem',
 		marginLeft: '1rem',
 	},
+	guideSection: {
+		marginBottom: '1rem',
+		textAlign: 'center',
+	},
+	guideLabel: {
+		marginRight: '0.5rem',
+		fontSize: '1rem',
+	},
+	guideInput: {
+		padding: '0.5rem',
+		fontSize: '1rem',
+		width: '60%',
+		maxWidth: '300px',
+	},
+	saveGuideBtn: {
+		padding: '0.5rem 1rem',
+		fontSize: '1rem',
+		marginLeft: '0.5rem',
+		backgroundColor: '#007bff',
+		color: '#fff',
+		border: 'none',
+		cursor: 'pointer',
+	},
+	guideMessage: {
+		marginTop: '0.5rem',
+		fontSize: '0.9rem',
+	},
 	tableWrapper: {
 		overflowX: 'auto',
 		width: '100%',
@@ -248,15 +346,6 @@ const styles = {
 		padding: '0.3rem 0.5rem',
 		cursor: 'pointer',
 		fontSize: '0.8rem',
-	},
-	loading: {
-		textAlign: 'center',
-		marginTop: '2rem',
-	},
-	error: {
-		color: 'red',
-		textAlign: 'center',
-		marginTop: '2rem',
 	},
 }
 

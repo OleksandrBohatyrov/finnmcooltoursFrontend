@@ -45,6 +45,7 @@ function StatsPage({ token }) {
 							<th>Total Clients</th>
 							<th>Checked In</th>
 							<th>Not Arrived</th>
+							<th>Guide name</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -55,6 +56,7 @@ function StatsPage({ token }) {
 								<td>{s.totalClients}</td>
 								<td>{s.checkedInCount}</td>
 								<td>{s.notArrivedCount}</td>
+								<td>{s.guideName}</td>
 							</tr>
 						))}
 					</tbody>
