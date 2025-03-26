@@ -1,4 +1,4 @@
-GNU nano 6.2                                                  finnmcooltoursFrontend/Dockerfile                                                           FROM node:18 AS build
+FROM node:18 AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
