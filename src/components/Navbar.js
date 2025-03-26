@@ -5,7 +5,6 @@ import '../styles/Navbar.css'
 
 function NavbarBootstrap({ token, setToken }) {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
 	const navRef = useRef(null)
 
 	const toggleMenu = () => setMobileMenuOpen(!mobileMenuOpen)
@@ -34,12 +33,11 @@ function NavbarBootstrap({ token, setToken }) {
 	return (
 		<nav className='navbar navbar-expand-lg navbar-dark bg-dark' ref={navRef}>
 			<div className='container-fluid'>
-				{/* Logo on the left */}
+				{/* Логотип слева */}
 				<Link className='navbar-brand d-flex align-items-center' to='/' onClick={handleLinkClick}>
 					<img src={logo} alt='Company Logo' style={{ height: '40px', width: 'auto', marginRight: '8px' }} />
 				</Link>
 
-				{/* Burger menu button for mobile*/}
 				<button
 					className='navbar-toggler'
 					type='button'
