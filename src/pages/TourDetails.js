@@ -31,12 +31,12 @@ function TourDetails() {
   useEffect(() => {
     fetch(recordsApiUrl, {
       method: 'GET',
-      credentials: 'include', 
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
     })
-      .then(res => {
+      .then((res) => {
         if (!res.ok) {
           if (res.status === 401) {
             throw new Error('Please log in to view details.');
@@ -45,11 +45,11 @@ function TourDetails() {
         }
         return res.json();
       })
-      .then(data => {
+      .then((data) => {
         setRecords(data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         setError(err.message);
         setLoading(false);
       });
@@ -63,7 +63,7 @@ function TourDetails() {
         'Content-Type': 'application/json',
       },
     })
-      .then(res => {
+      .then((res) => {
         if (res.status === 404) {
           setGuideName('');
           return null;
@@ -71,12 +71,12 @@ function TourDetails() {
         if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
         return res.json();
       })
-      .then(tourData => {
+      .then((tourData) => {
         if (tourData) {
           setGuideName(tourData.guideName || '');
         }
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Error fetching tour:', err);
       });
   }, [tourApiUrl]);
@@ -120,15 +120,15 @@ function TourDetails() {
   };
 
   // Passenger check-in
-  const markCheckedIn = async id => {
+  const markCheckedIn = async (id) => {
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/records/${id}/checkin`, {
         method: 'POST',
         credentials: 'include',
       });
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-      setRecords(prev =>
-        prev.map(r => (r.id === id ? { ...r, checkedIn: true } : r))
+      setRecords((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, checkedIn: true } : r))
       );
     } catch (err) {
       console.error(err);
@@ -136,7 +136,7 @@ function TourDetails() {
   };
 
   // Dialog remove check-in
-  const handleRemoveCheckIn = passenger => {
+  const handleRemoveCheckIn = (passenger) => {
     setSelectedPassenger(passenger);
     setDialogOpen(true);
   };
@@ -152,8 +152,8 @@ function TourDetails() {
         }
       );
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-      setRecords(prev =>
-        prev.map(r =>
+      setRecords((prev) =>
+        prev.map((r) =>
           r.id === selectedPassenger.id ? { ...r, checkedIn: false } : r
         )
       );
@@ -165,7 +165,7 @@ function TourDetails() {
     }
   };
 
-  const filteredRecords = records.filter(r => {
+  const filteredRecords = records.filter((r) => {
     if (!searchTerm.trim()) return true;
     const lowerSearch = searchTerm.toLowerCase();
     const fullName = (r.surname + ' ' + r.firstName).toLowerCase();
@@ -182,10 +182,7 @@ function TourDetails() {
           Go Back
         </button>
         <h1 style={styles.title}>Tour Details: {decodeURIComponent(tourType)}</h1>
-        <button
-          style={styles.scanButton}
-          onClick={() => navigate('/qrscan', { state: { tourType } })}
-        >
+        <button style={styles.scanButton} onClick={() => navigate('/qrscan', { state: { tourType } })}>
           Scan QR
         </button>
       </div>
@@ -195,7 +192,7 @@ function TourDetails() {
         <input
           type="text"
           value={guideName}
-          onChange={e => setGuideName(e.target.value)}
+          onChange={(e) => setGuideName(e.target.value)}
           style={styles.guideInput}
           placeholder="Enter guide name"
         />
@@ -211,7 +208,7 @@ function TourDetails() {
           className="form-control search-input"
           placeholder="Search by name or surname..."
           value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
         <i className="fas fa-search search-icon"></i>
       </div>
@@ -223,33 +220,33 @@ function TourDetails() {
               <th style={styles.th}>Tour Date</th>
               <th style={styles.th}>Surname</th>
               <th style={styles.th}>First Name</th>
-              <th style={styles.th}>Pax</th>
-              <th style={styles.th}>Unique Ref</th>
-              <th style={styles.th}>Checked In</th>
-              <th style={styles.th}>Action</th>
+              <th style={{ ...styles.th, ...styles.narrowCol}}>Pax</th>
+              <th style={{ ...styles.th, ...styles.narrowCol }}>Checked</th>
+              <th style={{ ...styles.th, ...styles.narrowCol }}>Action</th>
             </tr>
           </thead>
           <tbody>
-            {filteredRecords.map(r => (
+            {filteredRecords.map((r) => (
               <tr
                 key={r.id}
-                ref={el => (rowRefs.current[r.id] = el)}
+                ref={(el) => (rowRefs.current[r.id] = el)}
                 className={String(r.id) === highlightedId ? 'highlighted' : ''}
               >
                 <td style={styles.td}>{new Date(r.tourDate).toLocaleDateString()}</td>
                 <td style={styles.td}>{r.surname}</td>
                 <td style={styles.td}>{r.firstName}</td>
                 <td style={styles.td}>{r.pax}</td>
-                <td style={styles.td}>{r.uniqueReference}</td>
-                <td style={styles.td}>{r.checkedIn ? 'Yes' : 'No'}</td>
-                <td style={styles.td}>
+                <td style={{ ...styles.td, ...styles.narrowCol }}>
+                  {r.checkedIn ? 'Yes' : 'No'}
+                </td>
+                <td style={{ ...styles.td, ...styles.narrowCol }}>
                   {!r.checkedIn ? (
                     <button style={styles.checkInBtn} onClick={() => markCheckedIn(r.id)}>
-                      Check In
+                      ✓
                     </button>
                   ) : (
                     <button style={styles.removeCheckInBtn} onClick={() => handleRemoveCheckIn(r)}>
-                      Remove Check In
+                      ✕
                     </button>
                   )}
                 </td>
@@ -266,7 +263,7 @@ function TourDetails() {
         passengerName={selectedPassenger ? `${selectedPassenger.surname} ${selectedPassenger.firstName}` : ''}
       />
     </div>
-  );
+  )
 }
 
 const styles = {
@@ -348,6 +345,12 @@ const styles = {
     textAlign: 'left',
     whiteSpace: 'nowrap',
   },
+  // Узкая колонка
+  narrowCol: {
+    width: '70px',
+    textAlign: 'center',
+    padding: '0.3rem',
+  },
   checkInBtn: {
     backgroundColor: '#28a745',
     color: '#fff',
@@ -364,6 +367,6 @@ const styles = {
     cursor: 'pointer',
     fontSize: '0.8rem',
   },
-};
+}
 
-export default TourDetails;
+export default TourDetails
