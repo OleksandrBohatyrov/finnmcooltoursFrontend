@@ -177,10 +177,7 @@ function TourDetails() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.headerRow}>
-        <button style={styles.backButton} onClick={() => navigate(-1)}>
-          Go Back
-        </button>
+      <div style={styles.headerRow}> 
         <h1 style={styles.title}>Tour Details: {decodeURIComponent(tourType)}</h1>
         <button style={styles.scanButton} onClick={() => navigate('/qrscan', { state: { tourType } })}>
           Scan QR
