@@ -79,6 +79,30 @@ table td {
   color: #555;
 }
 
+.search-container {
+  position: relative;
+  margin: 1rem 0; 
+}
+
+.search-input {
+  height: 50px;
+  border-radius: 30px;
+  padding-left: 40px; 
+  border: none;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+.search-icon {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  color: #888;
+}
+
+
+
 @media (max-width: 600px) {
   .app-content {
     padding: 10px;

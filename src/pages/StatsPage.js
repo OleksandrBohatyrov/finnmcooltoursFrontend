@@ -1,32 +1,42 @@
 import React, { useEffect, useState } from 'react';
 
-function StatsPage({ token }) {
+function StatsPage() {
   const [stats, setStats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const apiUrl = `${process.env.REACT_APP_API_URL}/records/stats`;
+
+  const apiUrl = `${process.env.REACT_APP_API_URL}/api/records/stats`;
+
   useEffect(() => {
-    if (!token) {
-      setError("Please log in to view stats.");
-      setLoading(false);
-      return;
-    }
     fetch(apiUrl, {
-      headers: { 'Authorization': `Bearer ${token}` }
+      method: 'GET',
+      credentials: 'include', 
+      headers: {
+        'Content-Type': 'application/json',
+      },
     })
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+      .then((res) => {
+        if (!res.ok) {
+          if (res.status === 401) {
+            throw new Error('401');
+          }
+          throw new Error(`HTTP error: ${res.status}`);
+        }
         return res.json();
       })
-      .then(data => {
+      .then((data) => {
         setStats(data);
         setLoading(false);
       })
-      .catch(err => {
-        setError(err.message);
+      .catch((err) => {
+        if (err.message === '401') {
+          setError('Please log in to view stats.');
+        } else {
+          setError(err.message);
+        }
         setLoading(false);
       });
-  }, [apiUrl, token]);
+  }, [apiUrl]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -45,6 +55,7 @@ function StatsPage({ token }) {
               <th>Total Clients</th>
               <th>Checked In</th>
               <th>Not Arrived</th>
+              <th>Guide name</th>
             </tr>
           </thead>
           <tbody>
@@ -55,6 +66,7 @@ function StatsPage({ token }) {
                 <td>{s.totalClients}</td>
                 <td>{s.checkedInCount}</td>
                 <td>{s.notArrivedCount}</td>
+                <td>{s.guideName}</td>
               </tr>
             ))}
           </tbody>
