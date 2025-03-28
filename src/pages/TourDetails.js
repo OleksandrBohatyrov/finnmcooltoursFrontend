@@ -220,7 +220,7 @@ function TourDetails() {
               <th style={styles.th}>Tour Date</th>
               <th style={styles.th}>Surname</th>
               <th style={styles.th}>First Name</th>
-              <th style={{ ...styles.th, ...styles.narrowCol}}>Pax</th>
+              <th style={{ ...styles.th, ...styles.narrowCol }}>Pax</th>
               <th style={{ ...styles.th, ...styles.narrowCol }}>Checked</th>
               <th style={{ ...styles.th, ...styles.narrowCol }}>Action</th>
             </tr>
@@ -233,9 +233,17 @@ function TourDetails() {
                 className={String(r.id) === highlightedId ? 'highlighted' : ''}
               >
                 <td style={styles.td}>{new Date(r.tourDate).toLocaleDateString()}</td>
-                <td style={styles.td}>{r.surname}</td>
+                {/* Если r.seats === "Front", подсвечиваем ячейку фамилии */}
+                <td
+                  style={{
+                    ...styles.td,
+                    ...(r.seats === 'Front' ? { backgroundColor: 'yellow' } : {}),
+                  }}
+                >
+                  {r.surname}
+                </td>
                 <td style={styles.td}>{r.firstName}</td>
-                <td style={styles.td}>{r.pax}</td>
+                <td style={{ ...styles.td, ...styles.narrowCol }}>{r.pax}</td>
                 <td style={{ ...styles.td, ...styles.narrowCol }}>
                   {r.checkedIn ? 'Yes' : 'No'}
                 </td>
@@ -263,7 +271,7 @@ function TourDetails() {
         passengerName={selectedPassenger ? `${selectedPassenger.surname} ${selectedPassenger.firstName}` : ''}
       />
     </div>
-  )
+  );
 }
 
 const styles = {
@@ -345,7 +353,6 @@ const styles = {
     textAlign: 'left',
     whiteSpace: 'nowrap',
   },
-  // Узкая колонка
   narrowCol: {
     width: '70px',
     textAlign: 'center',
@@ -367,6 +374,6 @@ const styles = {
     cursor: 'pointer',
     fontSize: '0.8rem',
   },
-}
+};
 
-export default TourDetails
+export default TourDetails;
