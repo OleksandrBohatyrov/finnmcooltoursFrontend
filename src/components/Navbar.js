@@ -75,6 +75,11 @@ function NavbarBootstrap({ isAuthenticated, setIsAuthenticated }) {
                 Stats
               </Link>
             </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/guide" onClick={handleLinkClick}>
+                Guide Management Page
+              </Link>
+            </li>
 
             {isAuthenticated ? (
               <>

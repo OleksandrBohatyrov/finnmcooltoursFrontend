@@ -8,6 +8,7 @@ import StatsPage from './pages/StatsPage';
 import LoginPage from './pages/LoginPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import QRScanPage from './pages/QRScanPage';
+import GuidePage from './pages/GuideManagementPage';
 
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -44,6 +45,7 @@ function App() {
           <Route path="/import" element={<ImportPage />} />
           <Route path="/qrscan" element={<QRScanPage />} />
           <Route path="/stats" element={<StatsPage />} />
+          <Route path="/guide" element={<GuidePage />} />
 
           <Route
             path="/login"

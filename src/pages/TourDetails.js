@@ -29,30 +29,37 @@ function TourDetails() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    fetch(recordsApiUrl, {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-      .then((res) => {
-        if (!res.ok) {
-          if (res.status === 401) {
-            throw new Error('Please log in to view details.');
+    // Функция для загрузки записей
+    const loadRecords = () => {
+      fetch(recordsApiUrl, {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
+        .then(res => {
+          if (!res.ok) {
+            if (res.status === 401) throw new Error('Please log in to view details.');
+            throw new Error(`HTTP error: ${res.status}`);
           }
-          throw new Error(`HTTP error: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setRecords(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
+          return res.json();
+        })
+        .then(data => {
+          setRecords(data);
+          setLoading(false);
+        })
+        .catch(err => {
+          setError(err.message);
+          setLoading(false);
+        });
+    };
+
+    loadRecords();
+
+    const intervalId = setInterval(() => {
+      loadRecords();
+    }, 5000);
+
+    return () => clearInterval(intervalId);
   }, [tourType, recordsApiUrl]);
 
   useEffect(() => {
@@ -63,7 +70,7 @@ function TourDetails() {
         'Content-Type': 'application/json',
       },
     })
-      .then((res) => {
+      .then(res => {
         if (res.status === 404) {
           setGuideName('');
           return null;
@@ -71,12 +78,12 @@ function TourDetails() {
         if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
         return res.json();
       })
-      .then((tourData) => {
+      .then(tourData => {
         if (tourData) {
           setGuideName(tourData.guideName || '');
         }
       })
-      .catch((err) => {
+      .catch(err => {
         console.error('Error fetching tour:', err);
       });
   }, [tourApiUrl]);
@@ -99,17 +106,14 @@ function TourDetails() {
       return;
     }
     try {
-      const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/tours/guide?tourType=${encodeURIComponent(tourType)}`,
-        {
-          method: 'PUT',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ guideName }),
-        }
-      );
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/tours/guide?tourType=${encodeURIComponent(tourType)}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ guideName }),
+      });
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
       const updatedTour = await res.json();
       setGuideMessage(`Guide name updated to: ${updatedTour.guideName}`);
@@ -120,23 +124,21 @@ function TourDetails() {
   };
 
   // Passenger check-in
-  const markCheckedIn = async (id) => {
+  const markCheckedIn = async id => {
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/records/${id}/checkin`, {
         method: 'POST',
         credentials: 'include',
       });
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-      setRecords((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, checkedIn: true } : r))
-      );
+      setRecords(prev => prev.map(r => (r.id === id ? { ...r, checkedIn: true } : r)));
     } catch (err) {
       console.error(err);
     }
   };
 
   // Dialog remove check-in
-  const handleRemoveCheckIn = (passenger) => {
+  const handleRemoveCheckIn = passenger => {
     setSelectedPassenger(passenger);
     setDialogOpen(true);
   };
@@ -144,19 +146,12 @@ function TourDetails() {
   const confirmRemoveCheckedIn = async () => {
     if (!selectedPassenger) return;
     try {
-      const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/records/${selectedPassenger.id}/remove-checkin`,
-        {
-          method: 'POST',
-          credentials: 'include',
-        }
-      );
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/records/${selectedPassenger.id}/remove-checkin`, {
+        method: 'POST',
+        credentials: 'include',
+      });
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-      setRecords((prev) =>
-        prev.map((r) =>
-          r.id === selectedPassenger.id ? { ...r, checkedIn: false } : r
-        )
-      );
+      setRecords(prev => prev.map(r => (r.id === selectedPassenger.id ? { ...r, checkedIn: false } : r)));
     } catch (err) {
       console.error('Error removing check-in:', err);
     } finally {
@@ -165,7 +160,7 @@ function TourDetails() {
     }
   };
 
-  const filteredRecords = records.filter((r) => {
+  const filteredRecords = records.filter(r => {
     if (!searchTerm.trim()) return true;
     const lowerSearch = searchTerm.toLowerCase();
     const fullName = (r.surname + ' ' + r.firstName).toLowerCase();
@@ -177,7 +172,7 @@ function TourDetails() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.headerRow}> 
+      <div style={styles.headerRow}>
         <h1 style={styles.title}>Tour Details: {decodeURIComponent(tourType)}</h1>
         <button style={styles.scanButton} onClick={() => navigate('/qrscan', { state: { tourType } })}>
           Scan QR
@@ -186,28 +181,16 @@ function TourDetails() {
 
       <div style={styles.guideSection}>
         <label style={styles.guideLabel}>Guide Name: </label>
-        <input
-          type="text"
-          value={guideName}
-          onChange={(e) => setGuideName(e.target.value)}
-          style={styles.guideInput}
-          placeholder="Enter guide name"
-        />
+        <input type='text' value={guideName} onChange={e => setGuideName(e.target.value)} style={styles.guideInput} placeholder='Enter guide name' />
         <button style={styles.saveGuideBtn} onClick={updateGuideName}>
           Save Guide
         </button>
         {guideMessage && <p style={styles.guideMessage}>{guideMessage}</p>}
       </div>
 
-      <div className="search-container">
-        <input
-          type="text"
-          className="form-control search-input"
-          placeholder="Search by name or surname..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <i className="fas fa-search search-icon"></i>
+      <div className='search-container'>
+        <input type='text' className='form-control search-input' placeholder='Search by name or surname...' value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+        <i className='fas fa-search search-icon'></i>
       </div>
 
       <div style={styles.tableWrapper}>
@@ -223,12 +206,8 @@ function TourDetails() {
             </tr>
           </thead>
           <tbody>
-            {filteredRecords.map((r) => (
-              <tr
-                key={r.id}
-                ref={(el) => (rowRefs.current[r.id] = el)}
-                className={String(r.id) === highlightedId ? 'highlighted' : ''}
-              >
+            {filteredRecords.map(r => (
+              <tr key={r.id} ref={el => (rowRefs.current[r.id] = el)} className={String(r.id) === highlightedId ? 'highlighted' : ''}>
                 <td style={styles.td}>{new Date(r.tourDate).toLocaleDateString()}</td>
                 {/* Если r.seats === "Front", подсвечиваем ячейку фамилии */}
                 <td
@@ -241,17 +220,19 @@ function TourDetails() {
                 </td>
                 <td style={styles.td}>{r.firstName}</td>
                 <td style={{ ...styles.td, ...styles.narrowCol }}>{r.pax}</td>
+                <td style={{ ...styles.td, ...styles.narrowCol }}>{r.checkedIn ? 'Yes' : 'No'}</td>
                 <td style={{ ...styles.td, ...styles.narrowCol }}>
-                  {r.checkedIn ? 'Yes' : 'No'}
-                </td>
-                <td style={{ ...styles.td, ...styles.narrowCol }}>
-                  {!r.checkedIn ? (
+                  {r.checkedIn ? (
+                    <>
+                      <button style={styles.removeCheckInBtn} onClick={() => handleRemoveCheckIn(r)}>
+                        ✕
+                      </button>
+                      {/* Показываем, кто checked in */}
+                      <span style={{ marginLeft: '0.5rem' }}>{r.checkedInBy}</span>
+                    </>
+                  ) : (
                     <button style={styles.checkInBtn} onClick={() => markCheckedIn(r.id)}>
                       ✓
-                    </button>
-                  ) : (
-                    <button style={styles.removeCheckInBtn} onClick={() => handleRemoveCheckIn(r)}>
-                      ✕
                     </button>
                   )}
                 </td>
