@@ -5,7 +5,6 @@ function GuideManagementPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Поля формы для добавления/редактирования
   const [editId, setEditId] = useState(null);
   const [email, setEmail] = useState('');
   const [userName, setUserName] = useState('');
@@ -13,7 +12,6 @@ function GuideManagementPage() {
 
   const apiUrl = `${process.env.REACT_APP_API_URL}/api/guides`;
 
-  // Загрузка списка гидов
   useEffect(() => {
     loadGuides();
   }, []);
