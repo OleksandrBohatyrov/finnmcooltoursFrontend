@@ -16,12 +16,13 @@ function TourDetails() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedPassenger, setSelectedPassenger] = useState(null);
 
+  const [editPaxId, setEditPaxId] = useState(null);
+  const [editPaxValue, setEditPaxValue] = useState('');
+
   const rowRefs = useRef({});
+  const [searchTerm, setSearchTerm] = useState('');
 
   const recordsApiUrl = `${process.env.REACT_APP_API_URL}/api/records?tourType=${encodeURIComponent(tourType)}`;
-  const tourApiUrl = `${process.env.REACT_APP_API_URL}/api/tours/byType?tourType=${encodeURIComponent(tourType)}`;
-
-  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const loadRecords = () => {
@@ -49,6 +50,7 @@ function TourDetails() {
 
     loadRecords();
 
+    // updating table every 5 seconds
     const intervalId = setInterval(() => {
       loadRecords();
     }, 5000);
@@ -68,6 +70,7 @@ function TourDetails() {
     }
   }, [highlightedId, records]);
 
+  // -- Check-in / Remove check-in --
   const markCheckedIn = async id => {
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/records/${id}/checkin`, {
@@ -103,6 +106,47 @@ function TourDetails() {
     }
   };
 
+  const handlePaxClick = (id, currentPax) => {
+    setEditPaxId(id);
+    setEditPaxValue(String(currentPax)); 
+  };
+
+  const handlePaxSave = async () => {
+    const newPaxNumber = parseInt(editPaxValue, 10);
+    if (isNaN(newPaxNumber) || newPaxNumber < 0) {
+      alert('Invalid Pax value');
+      return;
+    }
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/records/${editPaxId}/pax`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pax: newPaxNumber }),
+      });
+      if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+      setRecords(prev =>
+        prev.map(r =>
+          r.id === editPaxId ? { ...r, pax: newPaxNumber } : r
+        )
+      );
+    } catch (err) {
+      console.error('Error updating pax:', err);
+    } finally {
+      setEditPaxId(null);
+      setEditPaxValue('');
+    }
+  };
+
+  const handlePaxKeyDown = e => {
+    if (e.key === 'Enter') {
+      handlePaxSave();
+    } else if (e.key === 'Escape') {
+      setEditPaxId(null);
+      setEditPaxValue('');
+    }
+  };
+
   const filteredRecords = records.filter(r => {
     if (!searchTerm.trim()) return true;
     const lowerSearch = searchTerm.toLowerCase();
@@ -110,11 +154,11 @@ function TourDetails() {
     return fullName.includes(lowerSearch);
   });
 
-  const totalPassengers = filteredRecords.reduce((acc, r) => acc + r.pax, 0);
-  const checkedInPassengers = filteredRecords.reduce((acc, r) => acc + (r.checkedIn ? r.pax : 0), 0);
-
   if (loading) return <div>Loading...</div>;
   if (error) return <div style={{ color: 'red' }}>Error: {error}</div>;
+
+  const totalPassengers = filteredRecords.reduce((acc, r) => acc + r.pax, 0);
+  const checkedInPassengers = filteredRecords.reduce((acc, r) => acc + (r.checkedIn ? r.pax : 0), 0);
 
   return (
     <div style={styles.container}>
@@ -130,6 +174,7 @@ function TourDetails() {
         <p>Checked In: {checkedInPassengers}</p>
       </div>
 
+      {/* Поле поиска */}
       <div className="search-container">
         <input
           type="text"
@@ -141,6 +186,7 @@ function TourDetails() {
         <i className="fas fa-search search-icon"></i>
       </div>
 
+      {/* Таблица пассажиров */}
       <div style={styles.tableWrapper}>
         <table style={styles.table}>
           <thead>
@@ -155,12 +201,43 @@ function TourDetails() {
           </thead>
           <tbody>
             {filteredRecords.map(r => (
-              <tr key={r.id} ref={el => (rowRefs.current[r.id] = el)} className={String(r.id) === highlightedId ? 'highlighted' : ''}>
+              <tr
+                key={r.id}
+                ref={el => (rowRefs.current[r.id] = el)}
+                className={String(r.id) === highlightedId ? 'highlighted' : ''}
+              >
                 <td style={styles.td}>{new Date(r.tourDate).toLocaleDateString()}</td>
-                <td style={{ ...styles.td, ...(r.seats === 'Front' ? { backgroundColor: 'yellow' } : {}) }}>{r.surname}</td>
+
+                <td style={{ ...styles.td, ...(r.seats === 'Front' ? { backgroundColor: 'yellow' } : {}) }}>
+                  {r.surname}
+                </td>
+
                 <td style={styles.td}>{r.firstName}</td>
-                <td style={{ ...styles.td, ...styles.narrowCol }}>{r.pax}</td>
-                <td style={{ ...styles.td, ...styles.narrowCol }}>{r.checkedIn ? 'Yes' : 'No'}</td>
+
+                <td style={{ ...styles.td, ...styles.narrowCol }}>
+                  {editPaxId === r.id ? (
+                    <input
+                      style={styles.paxInput}
+                      value={editPaxValue}
+                      onChange={e => setEditPaxValue(e.target.value)}
+                      onBlur={handlePaxSave}
+                      onKeyDown={handlePaxKeyDown}
+                      autoFocus
+                    />
+                  ) : (
+                    <span
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => handlePaxClick(r.id, r.pax)}
+                    >
+                      {r.pax}
+                    </span>
+                  )}
+                </td>
+
+                <td style={{ ...styles.td, ...styles.narrowCol }}>
+                  {r.checkedIn ? 'Yes' : 'No'}
+                </td>
+
                 <td style={{ ...styles.td, ...styles.narrowCol }}>
                   {r.checkedIn ? (
                     <>
@@ -247,6 +324,10 @@ const styles = {
     width: '70px',
     textAlign: 'center',
     padding: '0.3rem',
+  },
+  paxInput: {
+    width: '50px',
+    textAlign: 'center',
   },
   checkInBtn: {
     backgroundColor: '#28a745',
