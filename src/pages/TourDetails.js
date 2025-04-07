@@ -16,17 +16,19 @@ function TourDetails() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedPassenger, setSelectedPassenger] = useState(null);
 
-  // Редактирование Pax
   const [editPaxId, setEditPaxId] = useState(null);
   const [editPaxValue, setEditPaxValue] = useState('');
 
   const [currentGuide, setCurrentGuide] = useState('');
+
+  const originalPaxMap = useRef({});
 
   const rowRefs = useRef({});
   const [searchTerm, setSearchTerm] = useState('');
 
   const recordsApiUrl = `${process.env.REACT_APP_API_URL}/api/records?tourType=${encodeURIComponent(tourType)}`;
 
+  // Получаем текущего пользователя (гида)
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/api/Auth/Me`, {
       method: 'GET',
@@ -62,6 +64,11 @@ function TourDetails() {
         })
         .then(data => {
           setRecords(data);
+          if (Object.keys(originalPaxMap.current).length === 0) {
+            data.forEach(record => {
+              originalPaxMap.current[record.id] = record.pax;
+            });
+          }
           setLoading(false);
         })
         .catch(err => {
@@ -71,11 +78,9 @@ function TourDetails() {
     };
 
     loadRecords();
-
     const intervalId = setInterval(() => {
       loadRecords();
     }, 5000);
-
     return () => clearInterval(intervalId);
   }, [tourType, recordsApiUrl]);
 
@@ -187,7 +192,6 @@ function TourDetails() {
   const sortedRecords = [...filteredRecords].sort((a, b) => {
     if (a.seats === 'Front' && b.seats !== 'Front') return -1;
     if (b.seats === 'Front' && a.seats !== 'Front') return 1;
-
     const surnameA = (a.surname || '').toLowerCase();
     const surnameB = (b.surname || '').toLowerCase();
     if (surnameA < surnameB) return -1;
@@ -227,7 +231,7 @@ function TourDetails() {
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
         />
-        <i className="fas fa-search search-icon"></i>
+        
       </div>
 
       <div style={styles.tableWrapper}>
@@ -265,7 +269,15 @@ function TourDetails() {
                       autoFocus
                     />
                   ) : (
-                    <span style={{ cursor: 'pointer' }} onClick={() => handlePaxClick(r.id, r.pax)}>
+                    <span
+                      style={{
+                        cursor: 'pointer',
+                        backgroundColor: r.pax !== originalPaxMap.current[r.id] ? '#FF474D' : 'inherit',
+                        padding: '0.2rem',
+                        borderRadius: '4px',
+                      }}
+                      onClick={() => handlePaxClick(r.id, r.pax)}
+                    >
                       {r.pax}
                     </span>
                   )}

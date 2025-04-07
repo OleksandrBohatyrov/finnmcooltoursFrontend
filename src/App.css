@@ -82,6 +82,9 @@ table td {
 .search-container {
   position: relative;
   margin: 1rem 0; 
+  
+
+
 }
 
 .search-input {
@@ -91,6 +94,7 @@ table td {
   border: none;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   width: 100%;
+
 }
 
 .search-icon {
