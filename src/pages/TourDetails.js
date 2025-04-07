@@ -16,6 +16,7 @@ function TourDetails() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedPassenger, setSelectedPassenger] = useState(null);
 
+  // Редактирование Pax
   const [editPaxId, setEditPaxId] = useState(null);
   const [editPaxValue, setEditPaxValue] = useState('');
 
@@ -90,6 +91,7 @@ function TourDetails() {
     }
   }, [highlightedId, records]);
 
+  // Check-in
   const markCheckedIn = async id => {
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/records/${id}/checkin`, {
@@ -107,6 +109,7 @@ function TourDetails() {
     }
   };
 
+  // Remove check-in
   const handleRemoveCheckIn = passenger => {
     setSelectedPassenger(passenger);
     setDialogOpen(true);
@@ -181,12 +184,23 @@ function TourDetails() {
     return fullName.includes(lowerSearch);
   });
 
+  const sortedRecords = [...filteredRecords].sort((a, b) => {
+    if (a.seats === 'Front' && b.seats !== 'Front') return -1;
+    if (b.seats === 'Front' && a.seats !== 'Front') return 1;
+
+    const surnameA = (a.surname || '').toLowerCase();
+    const surnameB = (b.surname || '').toLowerCase();
+    if (surnameA < surnameB) return -1;
+    if (surnameA > surnameB) return 1;
+    return 0;
+  });
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div style={{ color: 'red' }}>Error: {error}</div>;
 
-  const totalPassengers = filteredRecords.reduce((acc, r) => acc + r.pax, 0);
-  const checkedInPassengers = filteredRecords.reduce((acc, r) => acc + (r.checkedIn ? r.pax : 0), 0);
-  const myCheckedIn = filteredRecords
+  const totalPassengers = sortedRecords.reduce((acc, r) => acc + r.pax, 0);
+  const checkedInPassengers = sortedRecords.reduce((acc, r) => acc + (r.checkedIn ? r.pax : 0), 0);
+  const myCheckedIn = sortedRecords
     .filter(r => r.checkedIn && r.checkedInBy === currentGuide)
     .reduce((acc, r) => acc + r.pax, 0);
 
@@ -229,7 +243,7 @@ function TourDetails() {
             </tr>
           </thead>
           <tbody>
-            {filteredRecords.map(r => (
+            {sortedRecords.map(r => (
               <tr
                 key={r.id}
                 ref={el => (rowRefs.current[r.id] = el)}
