@@ -19,10 +19,31 @@ function TourDetails() {
   const [editPaxId, setEditPaxId] = useState(null);
   const [editPaxValue, setEditPaxValue] = useState('');
 
+  const [currentGuide, setCurrentGuide] = useState('');
+
   const rowRefs = useRef({});
   const [searchTerm, setSearchTerm] = useState('');
 
   const recordsApiUrl = `${process.env.REACT_APP_API_URL}/api/records?tourType=${encodeURIComponent(tourType)}`;
+
+  useEffect(() => {
+    fetch(`${process.env.REACT_APP_API_URL}/api/Auth/Me`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        setCurrentGuide(data.userName || data.email || '');
+      })
+      .catch(err => {
+        console.error('Error fetching current user:', err);
+        setCurrentGuide('Unknown');
+      });
+  }, []);
 
   useEffect(() => {
     const loadRecords = () => {
@@ -50,7 +71,6 @@ function TourDetails() {
 
     loadRecords();
 
-    // updating table every 5 seconds
     const intervalId = setInterval(() => {
       loadRecords();
     }, 5000);
@@ -70,7 +90,6 @@ function TourDetails() {
     }
   }, [highlightedId, records]);
 
-  // -- Check-in / Remove check-in --
   const markCheckedIn = async id => {
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/records/${id}/checkin`, {
@@ -78,7 +97,11 @@ function TourDetails() {
         credentials: 'include',
       });
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-      setRecords(prev => prev.map(r => (r.id === id ? { ...r, checkedIn: true } : r)));
+      setRecords(prev =>
+        prev.map(r =>
+          r.id === id ? { ...r, checkedIn: true, checkedInBy: currentGuide } : r
+        )
+      );
     } catch (err) {
       console.error(err);
     }
@@ -97,7 +120,11 @@ function TourDetails() {
         credentials: 'include',
       });
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-      setRecords(prev => prev.map(r => (r.id === selectedPassenger.id ? { ...r, checkedIn: false } : r)));
+      setRecords(prev =>
+        prev.map(r =>
+          r.id === selectedPassenger.id ? { ...r, checkedIn: false, checkedInBy: null } : r
+        )
+      );
     } catch (err) {
       console.error('Error removing check-in:', err);
     } finally {
@@ -108,7 +135,7 @@ function TourDetails() {
 
   const handlePaxClick = (id, currentPax) => {
     setEditPaxId(id);
-    setEditPaxValue(String(currentPax)); 
+    setEditPaxValue(String(currentPax));
   };
 
   const handlePaxSave = async () => {
@@ -159,6 +186,9 @@ function TourDetails() {
 
   const totalPassengers = filteredRecords.reduce((acc, r) => acc + r.pax, 0);
   const checkedInPassengers = filteredRecords.reduce((acc, r) => acc + (r.checkedIn ? r.pax : 0), 0);
+  const myCheckedIn = filteredRecords
+    .filter(r => r.checkedIn && r.checkedInBy === currentGuide)
+    .reduce((acc, r) => acc + r.pax, 0);
 
   return (
     <div style={styles.container}>
@@ -172,9 +202,9 @@ function TourDetails() {
       <div style={styles.summary}>
         <p>Total Passengers: {totalPassengers}</p>
         <p>Checked In: {checkedInPassengers}</p>
+        <p>My Checked In: {myCheckedIn}</p>
       </div>
 
-      {/* Поле поиска */}
       <div className="search-container">
         <input
           type="text"
@@ -186,7 +216,6 @@ function TourDetails() {
         <i className="fas fa-search search-icon"></i>
       </div>
 
-      {/* Таблица пассажиров */}
       <div style={styles.tableWrapper}>
         <table style={styles.table}>
           <thead>
@@ -207,13 +236,10 @@ function TourDetails() {
                 className={String(r.id) === highlightedId ? 'highlighted' : ''}
               >
                 <td style={styles.td}>{new Date(r.tourDate).toLocaleDateString()}</td>
-
                 <td style={{ ...styles.td, ...(r.seats === 'Front' ? { backgroundColor: 'yellow' } : {}) }}>
                   {r.surname}
                 </td>
-
                 <td style={styles.td}>{r.firstName}</td>
-
                 <td style={{ ...styles.td, ...styles.narrowCol }}>
                   {editPaxId === r.id ? (
                     <input
@@ -225,19 +251,12 @@ function TourDetails() {
                       autoFocus
                     />
                   ) : (
-                    <span
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => handlePaxClick(r.id, r.pax)}
-                    >
+                    <span style={{ cursor: 'pointer' }} onClick={() => handlePaxClick(r.id, r.pax)}>
                       {r.pax}
                     </span>
                   )}
                 </td>
-
-                <td style={{ ...styles.td, ...styles.narrowCol }}>
-                  {r.checkedIn ? 'Yes' : 'No'}
-                </td>
-
+                <td style={{ ...styles.td, ...styles.narrowCol }}>{r.checkedIn ? 'Yes' : 'No'}</td>
                 <td style={{ ...styles.td, ...styles.narrowCol }}>
                   {r.checkedIn ? (
                     <>
