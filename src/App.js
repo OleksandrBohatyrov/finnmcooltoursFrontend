@@ -15,27 +15,42 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Функция для обновления текущего пользователя:
+  const updateUser = async () => {
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Auth/Me`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) {
+        setIsAuthenticated(false);
+        setIsAdmin(false);
+        return;
+      }
+      const data = await res.json();
+      setIsAuthenticated(true);
+      setIsAdmin(data.isAdmin);
+    } catch (err) {
+      console.error('Error fetching current user:', err);
+      setIsAuthenticated(false);
+      setIsAdmin(false);
+    }
+  };
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/api/Auth/Me`, {
-      method: 'GET',
-      credentials: 'include', 
-    })
-      .then((res) => {
-        if (res.ok) {
-          setIsAuthenticated(true);  // 200 OK → user authorized
-        } else {
-          setIsAuthenticated(false); // 401/403 → unauthorize
-        }
-      })
-      .catch(() => setIsAuthenticated(false));
+    updateUser();
   }, []);
 
   return (
     <Router>
       <Navbar
         isAuthenticated={isAuthenticated}
+        isAdmin={isAdmin}
         setIsAuthenticated={setIsAuthenticated}
+        refreshUser={updateUser}
       />
 
       <div className="app-content">
@@ -46,12 +61,7 @@ function App() {
           <Route path="/qrscan" element={<QRScanPage />} />
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/guide" element={<GuidePage />} />
-
-          <Route
-            path="/login"
-            element={<LoginPage onLogin={() => setIsAuthenticated(true)} />}
-          />
-
+          <Route path="/login" element={<LoginPage onLogin={updateUser} />} />
           <Route path="/changepassword" element={<ChangePasswordPage />} />
         </Routes>
       </div>

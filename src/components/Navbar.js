@@ -1,50 +1,55 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import logo from '../assets/cropped-Finn_Logo-2-1-260x49.png'
-import '../styles/Navbar.css'
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import logo from '../assets/cropped-Finn_Logo-2-1-260x49.png';
+import '../styles/Navbar.css';
 
-function NavbarBootstrap({ isAuthenticated, setIsAuthenticated }) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const navRef = useRef(null)
-  const navigate = useNavigate()
+function Navbar({ isAuthenticated, isAdmin, setIsAuthenticated, refreshUser }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navRef = useRef(null);
+  const navigate = useNavigate();
 
-  const toggleMenu = () => setMobileMenuOpen(!mobileMenuOpen)
+  const toggleMenu = () => setMobileMenuOpen(!mobileMenuOpen);
 
   const handleLogout = async () => {
     try {
       await fetch(`${process.env.REACT_APP_API_URL}/api/Auth/Logout`, {
         method: 'POST',
         credentials: 'include',
-      })
-      setIsAuthenticated(false)
-      navigate('/login')
+      });
+      setIsAuthenticated(false);
+      refreshUser();  
+      navigate('/login');
     } catch (err) {
-      console.error('Logout error:', err)
+      console.error('Logout error:', err);
     }
-  }
+  };
 
   const handleDocClick = (e) => {
     if (mobileMenuOpen && navRef.current && !navRef.current.contains(e.target)) {
-      setMobileMenuOpen(false)
+      setMobileMenuOpen(false);
     }
-  }
+  };
 
   useEffect(() => {
-    document.addEventListener('mousedown', handleDocClick)
+    document.addEventListener('mousedown', handleDocClick);
     return () => {
-      document.removeEventListener('mousedown', handleDocClick)
-    }
-  }, [mobileMenuOpen])
+      document.removeEventListener('mousedown', handleDocClick);
+    };
+  }, [mobileMenuOpen]);
 
   const handleLinkClick = () => {
-    setMobileMenuOpen(false)
-  }
+    setMobileMenuOpen(false);
+  };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark" ref={navRef}>
       <div className="container-fluid">
         <Link className="navbar-brand d-flex align-items-center" to="/" onClick={handleLinkClick}>
-          <img src={logo} alt="Company Logo" style={{ height: '40px', width: 'auto', marginRight: '8px' }} />
+          <img
+            src={logo}
+            alt="Company Logo"
+            style={{ height: '40px', width: 'auto', marginRight: '8px' }}
+          />
         </Link>
 
         <button
@@ -65,23 +70,28 @@ function NavbarBootstrap({ isAuthenticated, setIsAuthenticated }) {
                 Home
               </Link>
             </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/import" onClick={handleLinkClick}>
-                Import Excel
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/stats" onClick={handleLinkClick}>
-                Stats
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/guide" onClick={handleLinkClick}>
-                Guide Management Page
-              </Link>
-            </li>
 
-            {isAuthenticated ? (
+            {isAuthenticated && isAdmin && (
+              <>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/import" onClick={handleLinkClick}>
+                    Import Excel
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/stats" onClick={handleLinkClick}>
+                    Stats
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/guide" onClick={handleLinkClick}>
+                    Guide Management Page
+                  </Link>
+                </li>
+              </>
+            )}
+
+            {isAuthenticated && (
               <>
                 <li className="nav-item">
                   <Link className="nav-link" to="/changepassword" onClick={handleLinkClick}>
@@ -93,15 +103,17 @@ function NavbarBootstrap({ isAuthenticated, setIsAuthenticated }) {
                     className="btn nav-link"
                     style={{ color: '#fff' }}
                     onClick={() => {
-                      handleLogout()
-                      handleLinkClick()
+                      handleLogout();
+                      handleLinkClick();
                     }}
                   >
                     Logout
                   </button>
                 </li>
               </>
-            ) : (
+            )}
+
+            {!isAuthenticated && (
               <li className="nav-item">
                 <Link className="nav-link" to="/login" onClick={handleLinkClick}>
                   Login
@@ -112,7 +124,7 @@ function NavbarBootstrap({ isAuthenticated, setIsAuthenticated }) {
         </div>
       </div>
     </nav>
-  )
+  );
 }
 
-export default NavbarBootstrap
+export default Navbar;
