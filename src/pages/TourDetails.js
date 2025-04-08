@@ -26,9 +26,10 @@ function TourDetails() {
   const rowRefs = useRef({});
   const [searchTerm, setSearchTerm] = useState('');
 
+  const scrolledRef = useRef(false);
+
   const recordsApiUrl = `${process.env.REACT_APP_API_URL}/api/records?tourType=${encodeURIComponent(tourType)}`;
 
-  // Получаем текущего пользователя (гида)
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/api/Auth/Me`, {
       method: 'GET',
@@ -84,8 +85,9 @@ function TourDetails() {
     return () => clearInterval(intervalId);
   }, [tourType, recordsApiUrl]);
 
+
   useEffect(() => {
-    if (highlightedId && records.length > 0) {
+    if (highlightedId && records.length > 0 && !scrolledRef.current) {
       const highlightedRow = rowRefs.current[highlightedId];
       if (highlightedRow) {
         highlightedRow.scrollIntoView({
@@ -93,6 +95,7 @@ function TourDetails() {
           block: 'center',
         });
       }
+      scrolledRef.current = true;
     }
   }, [highlightedId, records]);
 
