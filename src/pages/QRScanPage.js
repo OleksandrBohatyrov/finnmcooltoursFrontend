@@ -27,35 +27,40 @@ function QRScanPage() {
       return;
     }
     if (data) {
-      let ref = '';
-      if (typeof data === 'object' && data.data) {
-        ref = data.data;
-      } else {
-        ref = String(data);
-      }
+      let ref = typeof data === 'object' && data.data ? data.data : String(data);
       console.log('Scanned QR code:', ref);
+
       setUniqueRef(ref);
       setMessage('Scanning...');
+
       try {
         const res = await fetch(`${process.env.REACT_APP_API_URL}/api/records/checkin-unique`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include', 
-          body: JSON.stringify({ uniqueRef: ref }),
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            UniqueRef: ref,
+            TourType: tourType 
+          }),
         });
+
         if (res.status === 404) {
           setMessage('Passenger not found.');
+          return;
+        }
+        if (res.status === 400) {
+          const errText = await res.text();
+          setMessage(errText || "This passenger belongs to a different tour.");
           return;
         }
         if (!res.ok) {
           throw new Error(`HTTP error: ${res.status}`);
         }
+
         const responseData = await res.json();
         console.log('API response:', responseData);
-        setScannedPassenger(responseData.passenger);
-        setMessage(`Success: ${responseData.message}`);
+        setScannedPassenger(responseData.Passenger || responseData.passenger);
+        setMessage(`Success: ${responseData.Message || responseData.message}`);
       } catch (err) {
         console.error('Fetch error:', err);
         setMessage('Error: ' + err.message);
@@ -77,7 +82,12 @@ function QRScanPage() {
       <h2 style={styles.title}>QR Scanner</h2>
       <p style={styles.instructions}>Point your camera at the QR code to check in the passenger.</p>
       <div style={styles.scannerWrapper}>
-        <QrReader delay={delay} style={previewStyle} onScan={handleResult} constraints={{ facingMode: 'environment' }} />
+        <QrReader
+          delay={delay}
+          style={previewStyle}
+          onScan={handleResult}
+          constraints={{ facingMode: 'environment' }}
+        />
       </div>
 
       {uniqueRef && <p style={styles.refText}>QR Data: {uniqueRef}</p>}
@@ -88,8 +98,11 @@ function QRScanPage() {
           </p>
         </div>
       )}
-      {message && <p style={message.startsWith('Success') ? styles.success : styles.error}>{message}</p>}
-
+      {message && (
+        <p style={message.startsWith('Success') ? styles.success : styles.error}>
+          {message}
+        </p>
+      )}
       <button style={styles.backButton} onClick={handleBack}>
         Go Back
       </button>
