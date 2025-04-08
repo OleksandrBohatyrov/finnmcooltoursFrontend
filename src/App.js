@@ -17,7 +17,6 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Функция для обновления текущего пользователя:
   const updateUser = async () => {
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Auth/Me`, {
