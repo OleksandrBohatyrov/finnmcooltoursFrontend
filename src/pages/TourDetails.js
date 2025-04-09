@@ -362,7 +362,8 @@ function TourDetails() {
 							</thead>
 							<tbody>
 								{sortedRecords.map(r => (
-									<tr key={r.id} ref={el => (rowRefs.current[r.id] = el)}>
+									<tr key={r.id} ref={el => (rowRefs.current[r.id] = el)}
+                  className={String(r.id) === highlightedId ? 'highlighted' : ''}>
 										<td style={styles.td}>{new Date(r.tourDate).toLocaleDateString()}</td>
 										<td style={{ ...styles.td, ...(r.seats === 'Front' ? { backgroundColor: 'yellow' } : {}) }}>{r.surname}</td>
 										<td style={styles.td}>{r.firstName}</td>
