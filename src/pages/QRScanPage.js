@@ -14,7 +14,7 @@ function QRScanPage() {
   const delay = 500;
 
   const previewStyle = {
-    width: '50%',
+    width: '100%',
     maxWidth: '400px',
     margin: '0 auto',
     display: 'block',
