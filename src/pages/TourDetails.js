@@ -16,20 +16,35 @@ function TourDetails() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedPassenger, setSelectedPassenger] = useState(null);
 
+  // Редактирование Pax
   const [editPaxId, setEditPaxId] = useState(null);
   const [editPaxValue, setEditPaxValue] = useState('');
 
+  // Состояние для текущего гуида (из Auth/Me)
   const [currentGuide, setCurrentGuide] = useState('');
 
+  // Состояния для guide name (для обновления, если потребуется)
+  const [guideName, setGuideName] = useState('');
+
+  // Для хранения исходного значения Pax (для выделения изменённых значений)
   const originalPaxMap = useRef({});
 
   const rowRefs = useRef({});
   const [searchTerm, setSearchTerm] = useState('');
-
   const scrolledRef = useRef(false);
 
-  const recordsApiUrl = `${process.env.REACT_APP_API_URL}/api/records?tourType=${encodeURIComponent(tourType)}`;
+  // Состояния для формы "Add Passenger"
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newSurname, setNewSurname] = useState('');
+  const [newFirstName, setNewFirstName] = useState('');
+  const [newPax, setNewPax] = useState(1);
 
+  // URL-ы API
+  const recordsApiUrl = `${process.env.REACT_APP_API_URL}/api/records?tourType=${encodeURIComponent(tourType)}`;
+  const tourApiUrl = `${process.env.REACT_APP_API_URL}/api/tours/byType?tourType=${encodeURIComponent(tourType)}`;
+  const createPassengerUrl = `${process.env.REACT_APP_API_URL}/api/records/create`;
+
+  // Получаем данные о текущем пользователе (гиде)
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/api/Auth/Me`, {
       method: 'GET',
@@ -49,6 +64,7 @@ function TourDetails() {
       });
   }, []);
 
+  // Получаем список записей
   useEffect(() => {
     const loadRecords = () => {
       fetch(recordsApiUrl, {
@@ -65,6 +81,7 @@ function TourDetails() {
         })
         .then(data => {
           setRecords(data);
+          // Сохраняем первоначальные значения pax для последующего сравнения
           if (Object.keys(originalPaxMap.current).length === 0) {
             data.forEach(record => {
               originalPaxMap.current[record.id] = record.pax;
@@ -85,7 +102,7 @@ function TourDetails() {
     return () => clearInterval(intervalId);
   }, [tourType, recordsApiUrl]);
 
-
+  // Автопрокрутка к highlightedId только один раз
   useEffect(() => {
     if (highlightedId && records.length > 0 && !scrolledRef.current) {
       const highlightedRow = rowRefs.current[highlightedId];
@@ -100,7 +117,7 @@ function TourDetails() {
   }, [highlightedId, records]);
 
   // Check-in
-  const markCheckedIn = async id => {
+  const markCheckedIn = async (id) => {
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/records/${id}/checkin`, {
         method: 'POST',
@@ -118,7 +135,7 @@ function TourDetails() {
   };
 
   // Remove check-in
-  const handleRemoveCheckIn = passenger => {
+  const handleRemoveCheckIn = (passenger) => {
     setSelectedPassenger(passenger);
     setDialogOpen(true);
   };
@@ -144,6 +161,7 @@ function TourDetails() {
     }
   };
 
+  // Редактирование Pax
   const handlePaxClick = (id, currentPax) => {
     setEditPaxId(id);
     setEditPaxValue(String(currentPax));
@@ -185,6 +203,7 @@ function TourDetails() {
     }
   };
 
+  // Фильтрация записей по поиску
   const filteredRecords = records.filter(r => {
     if (!searchTerm.trim()) return true;
     const lowerSearch = searchTerm.toLowerCase();
@@ -192,6 +211,7 @@ function TourDetails() {
     return fullName.includes(lowerSearch);
   });
 
+  // Сортировка: сначала записи с seats === "Front" (подсвечиваются желтым), затем по алфавиту
   const sortedRecords = [...filteredRecords].sort((a, b) => {
     if (a.seats === 'Front' && b.seats !== 'Front') return -1;
     if (b.seats === 'Front' && a.seats !== 'Front') return 1;
@@ -202,14 +222,51 @@ function TourDetails() {
     return 0;
   });
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div style={{ color: 'red' }}>Error: {error}</div>;
-
+  // Общая статистика
   const totalPassengers = sortedRecords.reduce((acc, r) => acc + r.pax, 0);
   const checkedInPassengers = sortedRecords.reduce((acc, r) => acc + (r.checkedIn ? r.pax : 0), 0);
   const myCheckedIn = sortedRecords
     .filter(r => r.checkedIn && r.checkedInBy === currentGuide)
     .reduce((acc, r) => acc + r.pax, 0);
+
+  // Функция добавления нового пассажира
+  const handleAddPassenger = async () => {
+    // Используем сегодняшнюю дату для нового пассажира (или можно взять из существующих записей)
+    const selectedTourDate = new Date().toISOString();
+    const dto = {
+      TourDate: selectedTourDate,
+      TourType: tourType,
+      Surname: newSurname,
+      FirstName: newFirstName,
+      Pax: newPax
+    };
+
+    try {
+      const res = await fetch(createPassengerUrl, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dto)
+      });
+      if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+      const result = await res.json();
+      console.log('Passenger created:', result);
+      // Обновляем список пассажиров
+      const updatedList = await fetch(recordsApiUrl, { credentials: 'include' }).then(r => r.json());
+      setRecords(updatedList);
+      // Скрываем форму и очищаем поля
+      setShowAddForm(false);
+      setNewSurname('');
+      setNewFirstName('');
+      setNewPax(1);
+    } catch (err) {
+      console.error('Error adding passenger:', err);
+      alert('Error: ' + err.message);
+    }
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div style={{ color: 'red' }}>Error: {error}</div>;
 
   return (
     <div style={styles.container}>
@@ -226,16 +283,68 @@ function TourDetails() {
         <p>My Checked In: {myCheckedIn}</p>
       </div>
 
+      <div style={styles.guideSection}>
+        <label style={styles.guideLabel}>Guide Name: </label>
+        <input
+          type="text"
+          value={guideName}
+          onChange={(e) => setGuideName(e.target.value)}
+          style={styles.guideInput}
+          placeholder="Enter guide name"
+        />
+        <button style={styles.saveGuideBtn} onClick={() => { /* можно добавить логику обновления гуида через API */ }}>
+          Save Guide
+        </button>
+      </div>
+
       <div className="search-container">
         <input
           type="text"
           className="form-control search-input"
           placeholder="Search by name or surname..."
           value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
-        
       </div>
+
+      {/* Кнопка для показа/скрытия формы добавления пассажира */}
+      <div style={{ margin: '1rem 0' }}>
+        <button onClick={() => setShowAddForm(prev => !prev)}>
+          {showAddForm ? 'Cancel' : 'Add Passenger'}
+        </button>
+      </div>
+
+      {/* Форма для добавления нового пассажира */}
+      {showAddForm && (
+        <div style={styles.addPassengerForm}>
+          <h3>Add a New Passenger</h3>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label>Surname: </label>
+            <input
+              type="text"
+              value={newSurname}
+              onChange={e => setNewSurname(e.target.value)}
+            />
+          </div>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label>First Name: </label>
+            <input
+              type="text"
+              value={newFirstName}
+              onChange={e => setNewFirstName(e.target.value)}
+            />
+          </div>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label>Pax: </label>
+            <input
+              type="number"
+              value={newPax}
+              onChange={e => setNewPax(parseInt(e.target.value) || 1)}
+            />
+          </div>
+          <button onClick={handleAddPassenger}>Save</button>
+        </div>
+      )}
 
       <div style={styles.tableWrapper}>
         <table style={styles.table}>
@@ -254,7 +363,6 @@ function TourDetails() {
               <tr
                 key={r.id}
                 ref={el => (rowRefs.current[r.id] = el)}
-                className={String(r.id) === highlightedId ? 'highlighted' : ''}
               >
                 <td style={styles.td}>{new Date(r.tourDate).toLocaleDateString()}</td>
                 <td style={{ ...styles.td, ...(r.seats === 'Front' ? { backgroundColor: 'yellow' } : {}) }}>
@@ -285,14 +393,18 @@ function TourDetails() {
                     </span>
                   )}
                 </td>
-                <td style={{ ...styles.td, ...styles.narrowCol }}>{r.checkedIn ? 'Yes' : 'No'}</td>
+                <td style={{ ...styles.td, ...styles.narrowCol }}>
+                  {r.checkedIn ? 'Yes' : 'No'}
+                </td>
                 <td style={{ ...styles.td, ...styles.narrowCol }}>
                   {r.checkedIn ? (
                     <>
                       <button style={styles.removeCheckInBtn} onClick={() => handleRemoveCheckIn(r)}>
                         ✕
                       </button>
-                      <span style={{ marginLeft: '0.5rem' }}>{r.checkedInBy}</span>
+                      {r.checkedInBy && (
+                        <span style={{ marginLeft: '0.5rem' }}>{r.checkedInBy}</span>
+                      )}
                     </>
                   ) : (
                     <button style={styles.checkInBtn} onClick={() => markCheckedIn(r.id)}>
@@ -346,6 +458,39 @@ const styles = {
     padding: '0.5rem 1rem',
     fontSize: '1rem',
     marginLeft: '1rem',
+  },
+  guideSection: {
+    marginBottom: '1rem',
+    textAlign: 'center',
+  },
+  guideLabel: {
+    marginRight: '0.5rem',
+    fontSize: '1rem',
+  },
+  guideInput: {
+    padding: '0.5rem',
+    fontSize: '1rem',
+    width: '60%',
+    maxWidth: '300px',
+  },
+  saveGuideBtn: {
+    padding: '0.5rem 1rem',
+    fontSize: '1rem',
+    marginLeft: '0.5rem',
+    backgroundColor: '#007bff',
+    color: '#fff',
+    border: 'none',
+    cursor: 'pointer',
+  },
+  guideMessage: {
+    marginTop: '0.5rem',
+    fontSize: '0.9rem',
+  },
+  addPassengerForm: {
+    margin: '1rem 0',
+    padding: '0.5rem',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
   },
   tableWrapper: {
     overflowX: 'auto',
