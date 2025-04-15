@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import AlertDialog from '../components/AlertDialog'
 import DeleteAlertDialog from '../components/DeleteAlertDialog'
-// Новое диалоговое окно для notes
 import NotesDialog from '../components/NotesDialog'
 import '../styles/TourDetails.css'
 
@@ -24,19 +23,16 @@ function TourDetails() {
   const [editPaxId, setEditPaxId] = useState(null)
   const [editPaxValue, setEditPaxValue] = useState('')
 
-  // Текущее имя/ID пользователя (из Auth/Me)
+  // Id of current user
   const [currentUserId, setCurrentUserId] = useState('')
 
-  // Храним исходные значения pax
   const [originalPaxMap, setOriginalPaxMap] = useState({})
 
-  // Для добавления пассажира
   const [showAddForm, setShowAddForm] = useState(false)
   const [newSurname, setNewSurname] = useState('')
   const [newFirstName, setNewFirstName] = useState('')
   const [newPax, setNewPax] = useState(1)
 
-  // Состояние для диалога заметок:
   const [notesDialogOpen, setNotesDialogOpen] = useState(false)
   const [notesDialogText, setNotesDialogText] = useState('')
 
@@ -47,7 +43,6 @@ function TourDetails() {
   const recordsApiUrl = `${process.env.REACT_APP_API_URL}/api/records?tourType=${encodeURIComponent(tourType)}`
   const createPassengerUrl = `${process.env.REACT_APP_API_URL}/api/records/create`
 
-  // 1) Загружаем информацию о текущем пользователе (Auth/Me)
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/api/Auth/Me`, {
       method: 'GET',
@@ -67,7 +62,6 @@ function TourDetails() {
       })
   }, [])
 
-  // 2) Загружаем записи
   useEffect(() => {
     const loadRecords = () => {
       fetch(recordsApiUrl, {
@@ -102,7 +96,6 @@ function TourDetails() {
         })
         .catch(err => {
           console.warn('Fetch error:', err)
-          // не устанавливаем error, чтобы не ломать UI
           setLoading(false)
         })
     }
@@ -112,7 +105,6 @@ function TourDetails() {
     return () => clearInterval(intervalId)
   }, [tourType, recordsApiUrl, originalPaxMap])
 
-  // 3) Скролл до highlightedId 1 раз
   useEffect(() => {
     if (highlightedId && records.length > 0 && !scrolledRef.current) {
       const highlightedRow = rowRefs.current[highlightedId]
@@ -123,7 +115,7 @@ function TourDetails() {
     }
   }, [highlightedId, records])
 
-  // 4) Функции Check-in
+  //  Check-in
   const markCheckedIn = async id => {
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/records/${id}/checkin`, {
@@ -137,6 +129,7 @@ function TourDetails() {
     }
   }
 
+  // Check in delete
   const handleRemoveCheckIn = passenger => {
     setSelectedPassenger(passenger)
     setDialogOpen(true)
@@ -158,7 +151,7 @@ function TourDetails() {
     }
   }
 
-  // 5) Удаление пассажира
+  // Delete passenger
   const handleRemovePassenger = passenger => {
     setSelectedPassenger(passenger)
     setDeleteDialogOpen(true)
@@ -182,7 +175,7 @@ function TourDetails() {
     }
   }
 
-  // 6) Inline editing Pax
+  // Pax update
   const handlePaxClick = (id, currentPax) => {
     setEditPaxId(id)
     setEditPaxValue(String(currentPax))
@@ -218,7 +211,7 @@ function TourDetails() {
     }
   }
 
-  // 7) Фильтрация
+  //  Filter
   const filteredRecords = records.filter(r => {
     if (!searchTerm.trim()) return true
     const lowerSearch = searchTerm.toLowerCase()
@@ -226,28 +219,27 @@ function TourDetails() {
     return fullName.includes(lowerSearch)
   })
 
-  // 8) Сортировка: "Front" спереди, потом фамилия
+  // Front rows sort
   const sortedRecords = [...filteredRecords].sort((a, b) => {
     if (a.seats === 'Front' && b.seats !== 'Front') return -1
     if (b.seats === 'Front' && a.seats !== 'Front') return 1
     return (a.surname || '').localeCompare(b.surname || '')
   })
 
-  // 9) Статистика
   const totalPassengers = sortedRecords.reduce((acc, r) => acc + r.pax, 0)
   const checkedInPassengers = sortedRecords.reduce((acc, r) => acc + (r.checkedIn ? r.pax : 0), 0)
   const myCheckedIn = sortedRecords
     .filter(r => r.checkedIn && r.checkedInBy && currentUserId && r.checkedInBy.toLowerCase() === currentUserId.toLowerCase())
     .reduce((acc, r) => acc + r.pax, 0)
 
-  // 10) Add passenger
+  // Add new passenger
   const handleAddPassenger = async () => {
     if (!newSurname.trim() || !newFirstName.trim()) {
-      alert('Пожалуйста, заполните обязательные поля: Фамилия и Имя.')
+      alert('Please fill in the mandatory fields: Surname and First Name.')
       return
     }
     if (newPax < 1) {
-      alert('Количество пассажиров должно быть не менее 1.')
+      alert('The number of passengers must be at least 1.')
       return
     }
 
@@ -269,6 +261,7 @@ function TourDetails() {
       })
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
       await res.json()
+
       const updatedList = await fetch(recordsApiUrl, { credentials: 'include' }).then(r => r.json())
       setRecords(updatedList)
       setShowAddForm(false)
@@ -281,13 +274,10 @@ function TourDetails() {
     }
   }
 
-  // 11) Если идёт загрузка/ошибка
   if (loading) return <div>Loading...</div>
   if (error) return <div style={{ color: 'red' }}>Error: {error}</div>
 
-  // 12) Обработчик для показа диалога заметок
   const handleShowNotes = notes => {
-    // Открываем диалог
     setNotesDialogText(notes)
     setNotesDialogOpen(true)
   }
@@ -318,7 +308,7 @@ function TourDetails() {
       </div>
 
       <div style={{ margin: '1rem 0' }}>
-        <button onClick={() => setShowAddForm(prev => !prev)}>
+        <button style={styles.addPassengerBtn} onClick={() => setShowAddForm(prev => !prev)}>
           {showAddForm ? 'Cancel' : 'Add Passenger'}
         </button>
       </div>
@@ -356,7 +346,9 @@ function TourDetails() {
               onChange={e => setNewPax(parseInt(e.target.value) || 1)}
             />
           </div>
-          <button onClick={handleAddPassenger}>Save</button>
+          <button style={styles.addPassengerBtn} onClick={handleAddPassenger}>
+            Save
+          </button>
         </div>
       )}
 
@@ -379,10 +371,9 @@ function TourDetails() {
                 key={r.id}
                 ref={el => (rowRefs.current[r.id] = el)}
                 className={String(r.id) === highlightedId ? 'highlighted' : ''}
-                // Если есть r.notes, красим в голубой и по клику показываем диалог
                 style={{
                   backgroundColor: r.notes ? 'lightblue' : 'inherit',
-                  cursor: r.notes ? 'pointer' : 'auto'
+                  cursor: r.notes ? 'pointer' : 'auto',
                 }}
                 onClick={() => {
                   if (r.notes) {
@@ -393,13 +384,13 @@ function TourDetails() {
                 <td style={styles.td}>
                   {new Date(r.tourDate).toLocaleDateString('en-GB', {
                     day: 'numeric',
-                    month: 'short'
+                    month: 'short',
                   })}
                 </td>
                 <td
                   style={{
                     ...styles.td,
-                    ...(r.seats === 'Front' ? { backgroundColor: 'yellow' } : {})
+                    ...(r.seats === 'Front' ? { backgroundColor: 'yellow' } : {}),
                   }}
                 >
                   {r.surname}
@@ -407,7 +398,7 @@ function TourDetails() {
                 <td
                   style={{
                     ...styles.td,
-                    ...(r.seats === 'Front' ? { backgroundColor: 'yellow' } : {})
+                    ...(r.seats === 'Front' ? { backgroundColor: 'yellow' } : {}),
                   }}
                 >
                   {r.firstName}
@@ -426,9 +417,10 @@ function TourDetails() {
                     <span
                       style={{
                         cursor: 'pointer',
-                        backgroundColor: r.pax !== (originalPaxMap[r.id] ?? r.pax) ? '#FF474D' : 'inherit',
+                        backgroundColor:
+                          r.pax !== (originalPaxMap[r.id] ?? r.pax) ? '#FF474D' : 'inherit',
                         padding: '0.2rem',
-                        borderRadius: '4px'
+                        borderRadius: '4px',
                       }}
                       onClick={e => {
                         e.stopPropagation()
@@ -445,10 +437,13 @@ function TourDetails() {
                 <td style={{ ...styles.td, ...styles.narrowCol }}>
                   {r.checkedIn ? (
                     <>
-                      <button style={styles.removeCheckInBtn} onClick={e => {
-                        e.stopPropagation()
-                        handleRemoveCheckIn(r)
-                      }}>
+                      <button
+                        style={styles.removeCheckInBtn}
+                        onClick={e => {
+                          e.stopPropagation()
+                          handleRemoveCheckIn(r)
+                        }}
+                      >
                         ✕
                       </button>
                       {r.checkedInBy && (
@@ -457,10 +452,13 @@ function TourDetails() {
                     </>
                   ) : (
                     <>
-                      <button style={styles.checkInBtn} onClick={e => {
-                        e.stopPropagation()
-                        markCheckedIn(r.id)
-                      }}>
+                      <button
+                        style={styles.checkInBtn}
+                        onClick={e => {
+                          e.stopPropagation()
+                          markCheckedIn(r.id)
+                        }}
+                      >
                         ✓
                       </button>
                       <button
@@ -481,7 +479,6 @@ function TourDetails() {
         </table>
       </div>
 
-      {/* Диалог удаления check-in */}
       <AlertDialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
@@ -489,7 +486,6 @@ function TourDetails() {
         passengerName={selectedPassenger ? `${selectedPassenger.surname} ${selectedPassenger.firstName}` : ''}
       />
 
-      {/* Диалог удаления пассажира */}
       <DeleteAlertDialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
@@ -497,7 +493,6 @@ function TourDetails() {
         passengerName={selectedPassenger ? `${selectedPassenger.surname} ${selectedPassenger.firstName}` : ''}
       />
 
-      {/* Диалог заметок */}
       <NotesDialog
         open={notesDialogOpen}
         onClose={() => setNotesDialogOpen(false)}
@@ -513,93 +508,88 @@ const styles = {
     margin: '0 auto',
     padding: '1rem',
     fontFamily: 'Arial, sans-serif',
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
   },
   headerRow: {
     display: 'flex',
     flexWrap: 'wrap',
     alignItems: 'center',
     marginBottom: '1rem',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
   },
   summary: {
     marginBottom: '1rem',
     textAlign: 'center',
-    fontSize: '1rem'
+    fontSize: '1rem',
   },
   title: {
     margin: 0,
     fontSize: '1.2rem',
     textAlign: 'center',
-    flex: 1
+    flex: 1,
   },
+
   scanButton: {
-    padding: '0.5rem 1rem',
-    fontSize: '1rem',
-    marginLeft: '1rem'
-  },
-  guideSection: {
-    marginBottom: '1rem',
-    textAlign: 'center'
-  },
-  guideLabel: {
-    marginRight: '0.5rem',
-    fontSize: '1rem'
-  },
-  guideInput: {
-    padding: '0.5rem',
-    fontSize: '1rem',
-    width: '60%',
-    maxWidth: '300px'
-  },
-  saveGuideBtn: {
-    padding: '0.5rem 1rem',
-    fontSize: '1rem',
-    marginLeft: '0.5rem',
     backgroundColor: '#007bff',
+    borderRadius: '24px',
     color: '#fff',
+    fontSize: '1rem',
+    fontWeight: '500',
+    padding: '0.5rem 1rem',
+    cursor: 'pointer',
     border: 'none',
-    cursor: 'pointer'
+    outline: 'none',
+    marginLeft: '1rem',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)',
   },
-  guideMessage: {
-    marginTop: '0.5rem',
-    fontSize: '0.9rem'
+  addPassengerBtn: {
+    backgroundColor: '#28a745',
+    borderRadius: '24px',
+    color: '#fff',
+    fontSize: '1rem',
+    fontWeight: '500',
+    padding: '0.5rem 1rem',
+    cursor: 'pointer',
+    border: 'none',
+    outline: 'none',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)',
   },
+
   addPassengerForm: {
     margin: '1rem 0',
     padding: '0.5rem',
     border: '1px solid #ccc',
-    borderRadius: '4px'
+    borderRadius: '4px',
   },
   tableWrapper: {
     overflowX: 'auto',
-    width: '100%'
+    width: '100%',
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
-    fontSize: '0.9rem'
+    fontSize: '0.9rem',
   },
   th: {
     padding: '0.5rem',
     border: '1px solid #ddd',
     textAlign: 'left',
-    whiteSpace: 'nowrap'
+    whiteSpace: 'nowrap',
   },
   td: {
     padding: '0.5rem',
     border: '1px solid #ddd',
     textAlign: 'left',
-    whiteSpace: 'nowrap'
+    whiteSpace: 'nowrap',
   },
   narrowCol: {
     width: '40px',
     textAlign: 'center',
-    padding: '0.2rem'
+    padding: '0.2rem',
   },
   paxInput: {
     width: '30px',
-    textAlign: 'center'
+    textAlign: 'center',
   },
   checkInBtn: {
     backgroundColor: '#28a745',
@@ -607,7 +597,8 @@ const styles = {
     border: 'none',
     fontSize: '1.8rem',
     padding: '0.2rem 0.4rem',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    borderRadius: '4px',
   },
   removeCheckInBtn: {
     backgroundColor: '#ffc107',
@@ -615,8 +606,9 @@ const styles = {
     border: 'none',
     fontSize: '0.7rem',
     padding: '0.2rem 0.3rem',
-    cursor: 'pointer'
-  }
+    cursor: 'pointer',
+    borderRadius: '4px',
+  },
 }
 
 export default TourDetails
