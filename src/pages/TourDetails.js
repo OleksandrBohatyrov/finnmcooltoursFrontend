@@ -418,7 +418,7 @@ function TourDetails() {
                       style={{
                         cursor: 'pointer',
                         backgroundColor:
-                          r.pax !== (originalPaxMap[r.id] ?? r.pax) ? '#FF474D' : 'inherit',
+                          r.pax !== r.originalPax ? '#FF474D' : 'inherit',
                         padding: '0.2rem',
                         borderRadius: '4px',
                       }}
