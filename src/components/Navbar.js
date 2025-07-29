@@ -90,7 +90,7 @@ function Navbar({ isAuthenticated, isAdmin, setIsAuthenticated, refreshUser }) {
                 </li>
               </>
             )}
-
+  
             {isAuthenticated && (
               <>
                 <li className="nav-item">
