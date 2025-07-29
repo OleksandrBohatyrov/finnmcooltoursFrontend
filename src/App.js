@@ -17,8 +17,6 @@ function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false)
 	const [isAdmin, setIsAdmin] = useState(false)
 
-	console.log('API URL:', process.env.REACT_APP_API_URL)
-
 	const updateUser = async () => {
 		try {
 			const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Auth/Me`, {
@@ -42,6 +40,7 @@ function App() {
 	}
 
 	useEffect(() => {
+		console.log('API URL:', process.env.REACT_APP_API_URL)
 		updateUser()
 	}, [])
 
